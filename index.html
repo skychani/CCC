@@ -146,7 +146,69 @@ select.ffi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.
 .btm-btn.pri{background:var(--accent);border-color:var(--accent);color:#fff;flex:2}
 .btm-btn:active{opacity:.8}
 @media(min-width:768px){body{padding-bottom:0}.btm-bar{display:none}header{padding:0 28px}.banner{padding:14px 28px 16px}.main{padding:24px 28px}.fg{grid-template-columns:repeat(3,1fr)}.fc-body{grid-template-columns:repeat(3,1fr)}.coeff-row{grid-template-columns:repeat(4,1fr)}.kpi-grid{grid-template-columns:repeat(4,1fr)}}
-@media print{header,.banner,.top-tabs,.sub-tabs,.btm-bar,.btn-add,.btn-del,.btn-sm{display:none!important}body{background:#fff;padding:0}.rblock-body{display:block!important}.main{padding:0}}
+#printView{display:none}
+@media print{
+  body>*:not(#printView){display:none!important}
+  #printView{display:block!important;font-family:'Noto Sans KR',sans-serif;font-size:10.5pt;color:#1C1B18;padding:14mm 12mm}
+  @page{margin:0;size:A4 portrait}
+  .pr-title{font-size:15pt;font-weight:700;margin-bottom:1mm}
+  .pr-meta{font-size:8.5pt;color:#6B6760;margin-bottom:5mm;padding-bottom:3mm;border-bottom:1.5pt solid #1C1B18}
+  .pr-section{margin-bottom:6mm}
+  .pr-section-title{font-size:8pt;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#9E9A94;border-bottom:1pt solid #DEDAD3;padding-bottom:1.5mm;margin-bottom:3mm}
+  .pr-grid2{display:grid;grid-template-columns:1fr 1fr;gap:3mm;margin-bottom:4mm}
+  .pr-grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:3mm;margin-bottom:4mm}
+  .pr-kpi{border:1pt solid #DEDAD3;border-radius:3pt;padding:3mm 4mm;break-inside:avoid}
+  .pr-kpi-label{font-size:7pt;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#9E9A94;margin-bottom:1mm}
+  .pr-kpi-val{font-family:'DM Mono',monospace;font-size:15pt;font-weight:500;color:#1C1B18;line-height:1.1}
+  .pr-kpi-unit{font-size:8.5pt;color:#9E9A94}
+  .pr-kpi-sub{font-size:7pt;color:#9E9A94;margin-top:1mm}
+  .pr-kpi.gn{background:#E8F7EF;border-color:#1A7A4A}.pr-kpi.gn .pr-kpi-val{color:#1A7A4A}
+  .pr-kpi.acc{background:#2B5BE0;border-color:#2B5BE0}.pr-kpi.acc .pr-kpi-label,.pr-kpi.acc .pr-kpi-unit,.pr-kpi.acc .pr-kpi-sub{color:rgba(255,255,255,.55)}.pr-kpi.acc .pr-kpi-val{color:#fff}
+  .pr-kpi.rd{background:#FFF0EB;border-color:#C94F1A}.pr-kpi.rd .pr-kpi-val{color:#C94F1A}
+  .pr-2col{display:grid;grid-template-columns:1fr 1fr;gap:5mm}
+  .pr-box{border:1pt solid #DEDAD3;border-radius:3pt;padding:3mm 4mm;break-inside:avoid}
+  .pr-box-title{font-size:7.5pt;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#9E9A94;margin-bottom:2mm;padding-bottom:1.5mm;border-bottom:.5pt solid #ECEAE5}
+  .pr-row{display:flex;justify-content:space-between;align-items:baseline;padding:1.5mm 0;border-bottom:.5pt solid #F0EEE9;gap:3mm}
+  .pr-row:last-child{border-bottom:none}
+  .pr-row-l{font-size:9.5pt;color:#6B6760;flex:1}
+  .pr-row-v{font-family:'DM Mono',monospace;font-size:9.5pt;color:#1C1B18;white-space:nowrap}
+  .pr-row.strong .pr-row-l{font-weight:600;color:#1C1B18;font-size:10pt}
+  .pr-row.strong .pr-row-v{font-weight:600;color:#2B5BE0;font-size:10pt}
+  .pr-row.strong.gn .pr-row-v{color:#1A7A4A}
+  .pr-row.strong.rd .pr-row-v{color:#C94F1A}
+  .pr-row.ind .pr-row-l{padding-left:5mm;font-size:8.5pt;color:#9E9A94}
+  .pr-row.ind .pr-row-v{font-size:8.5pt;color:#9E9A94}
+  .pr-divider{height:.5pt;background:#DEDAD3;margin:1.5mm 0}
+  .pr-floor-tbl{width:100%;border-collapse:collapse;font-size:9pt;break-inside:avoid}
+  .pr-floor-tbl th{background:#ECEAE5;padding:1.5mm 3mm;text-align:left;font-size:7.5pt;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#9E9A94;border-bottom:1pt solid #DEDAD3}
+  .pr-floor-tbl th:not(:first-child):not(:nth-child(2)){text-align:right}
+  .pr-floor-tbl td{padding:1.5mm 3mm;border-bottom:.5pt solid #F0EEE9;color:#6B6760}
+  .pr-floor-tbl td:first-child{font-weight:600;color:#1C1B18}
+  .pr-floor-tbl td:not(:first-child):not(:nth-child(2)){text-align:right;font-family:'DM Mono',monospace}
+  .pr-floor-tbl tr.sum-r td{background:#ECEAE5;font-weight:700;border-top:1pt solid #B8B3A8;color:#1C1B18}
+  .pr-floor-tbl tr.sum-r td:last-child{color:#2B5BE0}
+  .pr-tag-ug{font-size:7pt;background:#FFF0EB;color:#C94F1A;padding:0 2mm;border-radius:2pt;border:.5pt solid #F5C4B0;margin-left:1mm;vertical-align:middle}
+  .pr-bep{border:1pt solid #7B9FF5;border-radius:3pt;padding:2.5mm 4mm;display:flex;align-items:center;justify-content:space-between;margin-bottom:4mm;background:#EBF0FF}
+  .pr-bep.profit{background:#E8F7EF;border-color:#1A7A4A}
+  .pr-bep.loss{background:#FFF0EB;border-color:#C94F1A}
+  .pr-bep-l .label{font-size:7.5pt;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#2B5BE0;margin-bottom:.5mm}
+  .pr-bep.profit .pr-bep-l .label{color:#1A7A4A}
+  .pr-bep.loss .pr-bep-l .label{color:#C94F1A}
+  .pr-bep-l .desc{font-size:8.5pt;color:#6B6760}
+  .pr-bep-val{font-family:'DM Mono',monospace;font-size:13pt;font-weight:500;color:#2B5BE0}
+  .pr-bep.profit .pr-bep-val{color:#1A7A4A}
+  .pr-bep.loss .pr-bep-val{color:#C94F1A}
+  .pr-cf-tbl{width:100%;border-collapse:collapse;font-size:8.5pt}
+  .pr-cf-tbl th{background:#ECEAE5;padding:1.5mm 3mm;font-size:7.5pt;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#9E9A94;border-bottom:1pt solid #DEDAD3}
+  .pr-cf-tbl th:not(:first-child){text-align:right}
+  .pr-cf-tbl td{padding:1mm 3mm;border-bottom:.5pt solid #F0EEE9;font-family:'DM Mono',monospace}
+  .pr-cf-tbl td:first-child{font-family:'Noto Sans KR',sans-serif;color:#6B6760}
+  .pr-cf-tbl td:not(:first-child){text-align:right}
+  .pr-cf-tbl td.pos{color:#1A7A4A}
+  .pr-cf-tbl td.neg{color:#C94F1A}
+  .pr-notice{font-size:7.5pt;color:#9E9A94;line-height:1.6;margin-top:5mm;padding-top:2.5mm;border-top:1pt solid #DEDAD3}
+  .page-break{page-break-before:always}
+}
 </style>
 </head>
 <body>
@@ -155,7 +217,7 @@ select.ffi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.
   <div class="hdr-acts">
     <button class="btn-sm" onclick="loadData()">불러오기</button>
     <button class="btn-sm" onclick="saveData()">저장</button>
-    <button class="btn-sm pri" onclick="window.print()">인쇄</button>
+    <button class="btn-sm pri" onclick="printReport()">인쇄 / PDF</button>
   </div>
 </header>
 <div class="banner" id="bannerEl">
@@ -318,7 +380,7 @@ select.ffi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.
 <div class="btm-bar">
   <button class="btm-btn" onclick="loadData()">불러오기</button>
   <button class="btm-btn" onclick="saveData()">저장</button>
-  <button class="btm-btn pri" onclick="window.print()">인쇄 / PDF</button>
+  <button class="btm-btn pri" onclick="printReport()">인쇄 / PDF</button>
 </div>
 <script>
 const USE_OPTIONS=[
@@ -753,6 +815,240 @@ function applyData(d){
   toggleLandMode();buildUnitRefTable();renderExtraGrid();renderSideGrid();renderFloors();buildRevenueInputs();recalcCost();
 }
 window.addEventListener('resize',()=>{if(_cfData.length)drawChart(_cfData,[]);});
+
+function printReport(){
+  // 현재 계산 값 수집
+  const sC=parseFloat(document.getElementById('structType').value)||1;
+  const rC=parseFloat(document.getElementById('region').value)||1;
+  const baseH=parseFloat(document.getElementById('baseHeight').value)||2.8;
+  const vatM=parseFloat(document.getElementById('vatYN').value)||1.1;
+  const ugB=parseFloat(document.getElementById('ugBonus').value)||1.3;
+  const PY=3.3058;
+
+  let totPriv=0,totCommon=0,totDirect=0;
+  const floorRes=[];
+  floors.forEach(f=>{
+    const ug=f.ug||isUG(f.name);
+    const u=USE_OPTIONS.find(x=>x.key===f.use)||USE_OPTIONS[0];
+    const p=f.unitOverride!==''?+f.unitOverride:u.price;
+    const cost=Math.round(((f.priv||0)+(f.common||0))*p*hCoeff(f.height,baseH)*sC*rC*(ug?ugB:1));
+    totPriv+=(f.priv||0);totCommon+=(f.common||0);totDirect+=cost;
+    floorRes.push({name:f.name,use:u.label,priv:f.priv||0,common:f.common||0,area:(f.priv||0)+(f.common||0),height:f.height,cost,ug});
+  });
+  let indTotal=0;const indBreak=[];
+  extraItems.forEach(d=>{const amt=Math.round(totDirect*d.rate/100);indTotal+=amt;indBreak.push({label:d.label,rate:d.rate,amt});});
+  const preVAT=totDirect+indTotal,withVAT=Math.round(preVAT*vatM),totGFA=totPriv+totCommon;
+  const perSqm=totGFA>0?Math.round(totDirect/totGFA):0,perPy=Math.round(perSqm*PY);
+  const totPy=(totGFA/PY).toFixed(1);
+
+  // FS 값
+  const constEok=getConstEok(),constVAT=constEok*vatM,landEok=getLandEok();
+  const permitM=parseInt(document.getElementById('permitM').value)||12;
+  const constM=parseInt(document.getElementById('constM').value)||18;
+  const ltvR=parseFloat(document.getElementById('ltvRate').value)||60;
+  const pfR=parseFloat(document.getElementById('pfRate').value)||6;
+  const discR=parseFloat(document.getElementById('discRate').value)||10;
+  const dt=document.getElementById('devType').value;
+  let sideTotal=0;const sideBreak=[];
+  sideItems.forEach(d=>{let base=constVAT;if(d.label.includes('취득'))base=landEok;const amt=base*d.rate/100;sideTotal+=amt;sideBreak.push({label:d.label,amt});});
+  const totCostEok=landEok+constVAT+sideTotal;
+  const loanEok=totCostEok*ltvR/100;
+  const interestEok=loanEok*pfR/100*(constM/12);
+  const totalCost=totCostEok+interestEok;
+  const areaByGrp={};REV_GROUPS.forEach(g=>{areaByGrp[g.key]=0;});
+  floors.forEach(f=>{const u=USE_OPTIONS.find(x=>x.key===f.use);if(u&&u.sk)areaByGrp[u.sk]+=(f.priv||0);});
+  let totRevEok=0;const revBreak=[];
+  REV_GROUPS.forEach(g=>{const area=areaByGrp[g.key];if(!area)return;const d=revData[g.key]||{saleUnit:0,rentUnit:0,vacancy:5};
+    if(dt==='sale'||dt==='mixed'){const e=(area*d.saleUnit)/10000;totRevEok+=e;revBreak.push({label:`${g.label} 분양수입`,amt:e});}
+    if(dt==='rent'||dt==='mixed'){const e=(area*d.rentUnit*12*(1-d.vacancy/100))/10000*10;totRevEok+=e;revBreak.push({label:`${g.label} 임대수익(10년)`,amt:e});}
+  });
+  const profitEok=totRevEok-totalCost;
+  const profitRate=totalCost>0?profitEok/totalCost*100:0;
+  const qd=discR/100/4;
+  const npv=_cfData.reduce((s,c,i)=>s+c/Math.pow(1+qd,i+1),0);
+  let irr=NaN;try{irr=calcIRR(_cfData)*4*100;}catch(e){}
+  const totalSaleArea=REV_GROUPS.reduce((s,g)=>s+areaByGrp[g.key],0);
+  const bepUnit=totalSaleArea>0?Math.ceil((totalCost*10000)/totalSaleArea/10)*10:0;
+
+  // CF 누적
+  let cum=0;const cumCF=_cfData.map(c=>{cum+=c;return+cum.toFixed(2);});
+
+  const bldName=document.getElementById('bldName').value||'(건물명 미입력)';
+  const yr=document.getElementById('priceYear').value;
+  const now=new Date().toLocaleDateString('ko-KR');
+  const sEl=document.getElementById('structType'),rEl=document.getElementById('region');
+  const structLabel=sEl.options[sEl.selectedIndex].text,regionLabel=rEl.options[rEl.selectedIndex].text;
+
+  const isProfit=profitEok>=0;
+  const hasFSData=totRevEok>0||landEok>0;
+
+  const pv=document.getElementById('printView');
+  pv.innerHTML=`
+  <!-- ════ PAGE 1: 공사비 산출 ════ -->
+  <div class="pr-title">${bldName}</div>
+  <div class="pr-meta">건축공사비 · 사업성 검토표 &nbsp;|&nbsp; ${yr} &nbsp;|&nbsp; 출력일: ${now} &nbsp;|&nbsp; 구조: ${structLabel} &nbsp;|&nbsp; 지역: ${regionLabel}</div>
+
+  <!-- 공사비 핵심 KPI -->
+  <div class="pr-section">
+    <div class="pr-section-title">공사비 총괄</div>
+    <div class="pr-grid4">
+      <div class="pr-kpi">
+        <div class="pr-kpi-label">총 공사비 (VAT ${vatM>1?'포함':'별도'})</div>
+        <div class="pr-kpi-val">${(withVAT/10000).toFixed(2)}<span class="pr-kpi-unit"> 억원</span></div>
+        <div class="pr-kpi-sub">${fmt(withVAT)} 만원</div>
+      </div>
+      <div class="pr-kpi">
+        <div class="pr-kpi-label">직접공사비</div>
+        <div class="pr-kpi-val">${(totDirect/10000).toFixed(2)}<span class="pr-kpi-unit"> 억원</span></div>
+        <div class="pr-kpi-sub">VAT 전 기준</div>
+      </div>
+      <div class="pr-kpi">
+        <div class="pr-kpi-label">연면적</div>
+        <div class="pr-kpi-val">${fmt(totGFA)}<span class="pr-kpi-unit"> ㎡</span></div>
+        <div class="pr-kpi-sub">${totPy} 평</div>
+      </div>
+      <div class="pr-kpi">
+        <div class="pr-kpi-label">평균 공사비</div>
+        <div class="pr-kpi-val">${fmt(perSqm)}<span class="pr-kpi-unit"> 만/㎡</span></div>
+        <div class="pr-kpi-sub">평당 ${fmt(perPy)} 만원</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 층별 면적·공사비 -->
+  <div class="pr-section">
+    <div class="pr-section-title">층별 면적 및 공사비</div>
+    <table class="pr-floor-tbl">
+      <thead><tr><th>층</th><th>용도</th><th>전용(㎡)</th><th>공용(㎡)</th><th>합계(㎡)</th><th>층고(m)</th><th>공사비(만원)</th></tr></thead>
+      <tbody>
+        ${floorRes.map(r=>`<tr>
+          <td>${r.name}${r.ug?'<span class="pr-tag-ug">지하</span>':''}</td>
+          <td>${r.use}</td>
+          <td>${fmt(r.priv)}</td><td>${fmt(r.common)}</td><td>${fmt(r.area)}</td>
+          <td>${r.height}</td><td>${fmt(r.cost)}</td>
+        </tr>`).join('')}
+      </tbody>
+      <tfoot>
+        <tr class="sum-r">
+          <td colspan="2">합계</td>
+          <td>${fmt(totPriv)}</td><td>${fmt(totCommon)}</td><td>${fmt(totGFA)}</td>
+          <td>—</td><td>${fmt(totDirect)}</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <!-- 공사비 구성 + 면적 요약 -->
+  <div class="pr-section pr-2col">
+    <div class="pr-box">
+      <div class="pr-box-title">공사비 구성</div>
+      <div class="pr-row"><span class="pr-row-l">직접공사비</span><span class="pr-row-v">${fmt(totDirect)} 만원</span></div>
+      ${indBreak.map(x=>`<div class="pr-row ind"><span class="pr-row-l">${x.label} (${x.rate}%)</span><span class="pr-row-v">${fmt(x.amt)} 만</span></div>`).join('')}
+      <div class="pr-divider"></div>
+      <div class="pr-row"><span class="pr-row-l">소계 (VAT 전)</span><span class="pr-row-v">${fmt(preVAT)} 만원</span></div>
+      ${vatM>1?`<div class="pr-row ind"><span class="pr-row-l">부가세 (10%)</span><span class="pr-row-v">${fmt(Math.round(preVAT*.1))} 만</span></div>
+      <div class="pr-row strong"><span class="pr-row-l">합계 (VAT 포함)</span><span class="pr-row-v">${fmt(withVAT)} 만원</span></div>`:''}
+    </div>
+    <div class="pr-box">
+      <div class="pr-box-title">면적 요약 · 단가</div>
+      <div class="pr-row ind"><span class="pr-row-l">전용면적</span><span class="pr-row-v">${fmt(totPriv)} ㎡ (${(totPriv/PY).toFixed(1)}평)</span></div>
+      <div class="pr-row ind"><span class="pr-row-l">공용면적</span><span class="pr-row-v">${fmt(totCommon)} ㎡ (${(totCommon/PY).toFixed(1)}평)</span></div>
+      <div class="pr-divider"></div>
+      <div class="pr-row strong"><span class="pr-row-l">연면적 합계</span><span class="pr-row-v">${fmt(totGFA)} ㎡ (${totPy}평)</span></div>
+      <div class="pr-row ind"><span class="pr-row-l">㎡당 평균 공사비</span><span class="pr-row-v">${fmt(perSqm)} 만원/㎡</span></div>
+      <div class="pr-row ind"><span class="pr-row-l">평당 평균 공사비</span><span class="pr-row-v">${fmt(perPy)} 만원/평</span></div>
+      <div class="pr-row ind"><span class="pr-row-l">적용 구조계수</span><span class="pr-row-v">${sC.toFixed(2)} (${structLabel})</span></div>
+      <div class="pr-row ind"><span class="pr-row-l">적용 지역계수</span><span class="pr-row-v">${rC.toFixed(2)} (${regionLabel})</span></div>
+      <div class="pr-row ind"><span class="pr-row-l">지하층 할증</span><span class="pr-row-v">×${ugB.toFixed(2)}</span></div>
+    </div>
+  </div>
+
+  ${hasFSData?`
+  <!-- ════ PAGE 2: 사업성 검토 ════ -->
+  <div class="page-break"></div>
+  <div class="pr-title">${bldName}</div>
+  <div class="pr-meta">사업성 검토 (${dt==='sale'?'분양':dt==='rent'?'임대':'분양+임대'} 모델) &nbsp;|&nbsp; ${yr} &nbsp;|&nbsp; 출력일: ${now}</div>
+
+  <!-- 손익분기 -->
+  ${bepUnit>0?`<div class="pr-bep ${isProfit?'profit':'loss'}">
+    <div class="pr-bep-l">
+      <div class="label">손익분기 분양가</div>
+      <div class="desc">${isProfit?`현재 분양가가 손익분기(${fmt(bepUnit)}만원/㎡)보다 높습니다 — 흑자`:
+        `손익분기 달성을 위해 ${fmt(bepUnit)} 만원/㎡ 이상 필요`}</div>
+    </div>
+    <div class="pr-bep-val">${fmt(bepUnit)} 만원/㎡</div>
+  </div>`:''}
+
+  <!-- 사업성 KPI -->
+  <div class="pr-section">
+    <div class="pr-section-title">사업성 핵심 지표</div>
+    <div class="pr-grid4">
+      <div class="pr-kpi ${isProfit?'gn':'rd'}">
+        <div class="pr-kpi-label">개발이익</div>
+        <div class="pr-kpi-val">${Math.abs(profitEok).toFixed(2)}<span class="pr-kpi-unit"> 억</span></div>
+        <div class="pr-kpi-sub">${isProfit?'흑자':'적자'} · 수익률 ${profitRate.toFixed(1)}%</div>
+      </div>
+      <div class="pr-kpi acc">
+        <div class="pr-kpi-label">IRR (연환산)</div>
+        <div class="pr-kpi-val">${isNaN(irr)?'—':irr.toFixed(1)}<span class="pr-kpi-unit"> %</span></div>
+        <div class="pr-kpi-sub">요구수익률 ${discR}%</div>
+      </div>
+      <div class="pr-kpi">
+        <div class="pr-kpi-label">NPV</div>
+        <div class="pr-kpi-val">${npv.toFixed(1)}<span class="pr-kpi-unit"> 억</span></div>
+        <div class="pr-kpi-sub">${npv>=0?'투자 타당':'재검토'}</div>
+      </div>
+      <div class="pr-kpi">
+        <div class="pr-kpi-label">총사업비</div>
+        <div class="pr-kpi-val">${totalCost.toFixed(1)}<span class="pr-kpi-unit"> 억</span></div>
+        <div class="pr-kpi-sub">PF ${loanEok.toFixed(1)}억 (${ltvR}%)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 총사업비 + 수입 -->
+  <div class="pr-section pr-2col">
+    <div class="pr-box">
+      <div class="pr-box-title">총사업비 구성</div>
+      <div class="pr-row"><span class="pr-row-l">토지비</span><span class="pr-row-v">${landEok.toFixed(2)} 억</span></div>
+      <div class="pr-row"><span class="pr-row-l">공사비 (VAT 포함)</span><span class="pr-row-v">${constVAT.toFixed(2)} 억</span></div>
+      ${sideBreak.map(x=>`<div class="pr-row ind"><span class="pr-row-l">${x.label}</span><span class="pr-row-v">${x.amt.toFixed(2)} 억</span></div>`).join('')}
+      <div class="pr-row ind"><span class="pr-row-l">PF 이자 (공사기간)</span><span class="pr-row-v">${interestEok.toFixed(2)} 억</span></div>
+      <div class="pr-divider"></div>
+      <div class="pr-row strong"><span class="pr-row-l">총사업비</span><span class="pr-row-v">${totalCost.toFixed(2)} 억</span></div>
+    </div>
+    <div class="pr-box">
+      <div class="pr-box-title">수입 구성</div>
+      ${revBreak.map(r=>`<div class="pr-row"><span class="pr-row-l">${r.label}</span><span class="pr-row-v">${r.amt.toFixed(2)} 억</span></div>`).join('')}
+      <div class="pr-divider"></div>
+      <div class="pr-row strong ${isProfit?'gn':'rd'}"><span class="pr-row-l">개발이익</span><span class="pr-row-v">${profitEok.toFixed(2)} 억</span></div>
+    </div>
+  </div>
+
+  <!-- 현금흐름표 -->
+  ${_cfData.length?`<div class="pr-section">
+    <div class="pr-section-title">분기별 현금흐름표</div>
+    <table class="pr-cf-tbl">
+      <thead><tr><th>분기</th><th>현금흐름 (억)</th><th>누적 (억)</th></tr></thead>
+      <tbody>
+        ${_cfData.map((c,i)=>`<tr>
+          <td>Q${i+1}</td>
+          <td class="${c>=0?'pos':'neg'}">${c>=0?'+':''}${c.toFixed(2)}</td>
+          <td class="${cumCF[i]>=0?'pos':'neg'}">${cumCF[i]>=0?'+':''}${cumCF[i]}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>`:''}
+  `:''}
+
+  <div class="pr-notice">
+    본 산출은 개략 추정치(±20%)이며 사업성 검토·대안 비교 목적으로만 활용. 단가 기준: ${yr} / RC조·서울 기준 적용.<br>
+    참고: KICT 건설공사비지수 (kict.re.kr) · 국토교통부 건축공사비통계 (stat.molit.go.kr) · 조달청 (pps.go.kr) · KDI (kdi.re.kr)
+  </div>`;
+
+  window.print();
+}
 </script>
+<div id="printView"></div>
 </body>
 </html>
