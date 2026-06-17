@@ -24,6 +24,9 @@ header{background:var(--dark);color:#fff;padding:0 16px;height:52px;display:flex
 .b-chips{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
 .b-chip{font-size:11px;font-family:var(--mono);color:rgba(255,255,255,.5);background:rgba(255,255,255,.07);padding:3px 8px;border-radius:4px;white-space:nowrap}
 .b-chip span{color:rgba(255,255,255,.85)}
+.unit-toggle{display:flex;background:rgba(255,255,255,.1);border-radius:6px;padding:2px;gap:2px;margin-top:6px}
+.unit-toggle-btn{font-family:var(--mono);font-size:10px;font-weight:600;padding:3px 8px;border-radius:4px;border:none;background:transparent;color:rgba(255,255,255,.5);cursor:pointer;transition:all .15s;letter-spacing:.04em}
+.unit-toggle-btn.active{background:rgba(255,255,255,.2);color:#fff}
 .banner.profit{background:#145C38}
 .banner.loss{background:#8B2000}
 .banner.profit .b-label,.banner.loss .b-label{color:rgba(255,255,255,.5)}
@@ -165,6 +168,10 @@ select.ffi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.
     <div class="b-chips">
       <div class="b-chip"><span id="bChip1Label">연면적 </span><span id="bChip1">—</span></div>
       <div class="b-chip"><span id="bChip2Label">㎡당 </span><span id="bChip2">—</span></div>
+      <div class="unit-toggle">
+        <button class="unit-toggle-btn active" id="toggleSqm" onclick="setUnit(false)">㎡</button>
+        <button class="unit-toggle-btn" id="togglePy" onclick="setUnit(true)">평</button>
+      </div>
     </div>
   </div>
 </div>
@@ -334,7 +341,8 @@ let extraItems=[],extraId=0;
 let sideItems=[],sideId=0;
 let floors=[],floorId=0;
 let _cfData=[];
-let _bepUnit=0; // 손익분기 분양가 (만원/㎡), recalcFS에서 갱신
+let _bepUnit=0;
+let _usePhyeong=false; // false=㎡, true=평
 
 window.onload=function(){
   floors=[
@@ -429,18 +437,36 @@ function recalcCost(){
   extraItems.forEach(d=>{const amt=Math.round(totDirect*d.rate/100);indTotal+=amt;indBreak.push({label:d.label,rate:d.rate,amt});});
   const preVAT=totDirect+indTotal,withVAT=Math.round(preVAT*vatM),totGFA=totPriv+totCommon;
   const perSqm=totGFA>0?Math.round(totDirect/totGFA):0;
+  const PY=3.3058;
+  const totPy=Math.round(totGFA/PY*10)/10;
+  const perPy=Math.round(perSqm*PY);
   document.getElementById('bannerLabel').textContent='총 공사비 (VAT '+(vatM>1?'포함':'별도')+')';
   document.getElementById('bannerTotal').textContent=toEok(withVAT);
   document.getElementById('bannerUnit').textContent='억원';
   document.getElementById('bannerSub').textContent=fmt(withVAT)+' 만원';
-  document.getElementById('bChip1Label').textContent='연면적 ';document.getElementById('bChip1').textContent=fmt(totGFA)+' ㎡';
-  document.getElementById('bChip2Label').textContent='㎡당 ';document.getElementById('bChip2').textContent=fmt(perSqm)+' 만원';
+  // 평/㎡ 분기
+  if(_usePhyeong){
+    document.getElementById('bChip1Label').textContent='연면적 ';document.getElementById('bChip1').textContent=totPy.toLocaleString('ko-KR')+' 평';
+    document.getElementById('bChip2Label').textContent='평당 ';document.getElementById('bChip2').textContent=fmt(perPy)+' 만원';
+  } else {
+    document.getElementById('bChip1Label').textContent='연면적 ';document.getElementById('bChip1').textContent=fmt(totGFA)+' ㎡';
+    document.getElementById('bChip2Label').textContent='㎡당 ';document.getElementById('bChip2').textContent=fmt(perSqm)+' 만원';
+  }
   const rdF=document.getElementById('rdFloor');
   if(rdF)rdF.innerHTML=floorRes.map(r=>`<div class="rr ind"><span class="rr-l">${r.name} <span style="font-size:10px;opacity:.6">${r.use}${r.ug?' [지하]':''}</span></span><span class="rr-v">${fmt(r.cost)} 만</span></div>`).join('')+`<div class="r-div"></div><div class="rr strong"><span class="rr-l">직접공사비 소계</span><span class="rr-v">${fmt(totDirect)} 만원</span></div>`;
   const rdB=document.getElementById('rdBreakdown');
   if(rdB)rdB.innerHTML=`<div class="rr"><span class="rr-l">직접공사비</span><span class="rr-v">${fmt(totDirect)} 만원</span></div>`+indBreak.map(x=>`<div class="rr ind"><span class="rr-l">${x.label} (${x.rate}%)</span><span class="rr-v">${fmt(x.amt)} 만</span></div>`).join('')+`<div class="r-div"></div><div class="rr"><span class="rr-l">소계 (VAT 전)</span><span class="rr-v">${fmt(preVAT)} 만원</span></div>`+(vatM>1?`<div class="rr ind"><span class="rr-l">부가세</span><span class="rr-v">${fmt(Math.round(preVAT*.1))} 만</span></div><div class="rr strong"><span class="rr-l">합계 (VAT 포함)</span><span class="rr-v">${fmt(withVAT)} 만원</span></div>`:'');
   const rdA=document.getElementById('rdArea');
-  if(rdA)rdA.innerHTML=`<div class="rr ind"><span class="rr-l">전용면적 합계</span><span class="rr-v">${fmt(totPriv)} ㎡</span></div><div class="rr ind"><span class="rr-l">공용면적 합계</span><span class="rr-v">${fmt(totCommon)} ㎡</span></div><div class="r-div"></div><div class="rr strong"><span class="rr-l">연면적 합계</span><span class="rr-v">${fmt(totGFA)} ㎡</span></div><div class="rr ind"><span class="rr-l">㎡당 평균 공사비</span><span class="rr-v">${fmt(perSqm)} 만원</span></div>`;
+  if(rdA){
+    const privPy=(totPriv/PY).toFixed(1), commonPy=(totCommon/PY).toFixed(1), gfaPy=(totGFA/PY).toFixed(1);
+    rdA.innerHTML=`
+      <div class="rr ind"><span class="rr-l">전용면적 합계</span><span class="rr-v">${fmt(totPriv)} ㎡ <span style="color:var(--muted);font-size:10px">(${privPy}평)</span></span></div>
+      <div class="rr ind"><span class="rr-l">공용면적 합계</span><span class="rr-v">${fmt(totCommon)} ㎡ <span style="color:var(--muted);font-size:10px">(${commonPy}평)</span></span></div>
+      <div class="r-div"></div>
+      <div class="rr strong"><span class="rr-l">연면적 합계</span><span class="rr-v">${fmt(totGFA)} ㎡ <span style="font-weight:400;color:var(--muted);font-size:11px">(${gfaPy}평)</span></span></div>
+      <div class="rr ind"><span class="rr-l">㎡당 평균 공사비</span><span class="rr-v">${fmt(perSqm)} 만원/㎡</span></div>
+      <div class="rr ind"><span class="rr-l">평당 평균 공사비</span><span class="rr-v">${fmt(perPy)} 만원/평</span></div>`;
+  }
   autoSave();recalcFS();
 }
 
@@ -661,6 +687,12 @@ function drawChart(cfs,cumCF){
   cfs.forEach((_,i)=>ctx.fillText('Q'+(i+1),vx(i),H-6));
 }
 
+function setUnit(usePy){
+  _usePhyeong=usePy;
+  document.getElementById('toggleSqm').classList.toggle('active',!usePy);
+  document.getElementById('togglePy').classList.toggle('active',usePy);
+  recalcCost();
+}
 function applyBepAdj(val){
   const v=parseFloat(val);if(!v||v<=0)return;
   const inp=document.getElementById('bepAdj');if(inp)inp.dataset.userSet='1';
