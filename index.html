@@ -2,1127 +2,671 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>건축공사비 초기검토</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>건축공사비 · 사업성 검토</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap');
-
-  :root {
-    --bg: #F7F6F3;
-    --surface: #FFFFFF;
-    --surface2: #F0EEE9;
-    --border: #DDD9D0;
-    --border-strong: #B8B3A8;
-    --text-primary: #1C1B18;
-    --text-secondary: #6B6760;
-    --text-muted: #9E9A94;
-    --accent: #2B5BE0;
-    --accent-light: #EBF0FF;
-    --accent-mid: #7B9FF5;
-    --warn: #C94F1A;
-    --warn-light: #FFF0EB;
-    --positive: #1A7A4A;
-    --positive-light: #E8F7EF;
-    --tag-bg: #E8E5DF;
-    --mono: 'DM Mono', monospace;
-    --sans: 'Noto Sans KR', sans-serif;
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    font-family: var(--sans);
-    background: var(--bg);
-    color: var(--text-primary);
-    font-size: 13px;
-    line-height: 1.6;
-    min-height: 100vh;
-  }
-
-  /* ── HEADER ── */
-  header {
-    background: var(--text-primary);
-    color: white;
-    padding: 0 32px;
-    height: 52px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-  .header-title {
-    font-size: 13px;
-    font-weight: 500;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    opacity: 0.9;
-  }
-  .header-actions {
-    display: flex;
-    gap: 8px;
-  }
-  .btn-header {
-    font-family: var(--sans);
-    font-size: 11px;
-    font-weight: 500;
-    padding: 5px 12px;
-    border-radius: 4px;
-    border: 1px solid rgba(255,255,255,0.25);
-    background: transparent;
-    color: white;
-    cursor: pointer;
-    letter-spacing: 0.04em;
-    transition: background 0.15s;
-  }
-  .btn-header:hover { background: rgba(255,255,255,0.12); }
-  .btn-header.primary {
-    background: var(--accent);
-    border-color: var(--accent);
-  }
-  .btn-header.primary:hover { background: #2250C8; }
-
-  /* ── LAYOUT ── */
-  .layout {
-    display: grid;
-    grid-template-columns: 1fr 320px;
-    gap: 0;
-    min-height: calc(100vh - 52px);
-  }
-
-  /* ── LEFT PANEL ── */
-  .left-panel {
-    padding: 28px 32px;
-    border-right: 1px solid var(--border);
-    overflow-y: auto;
-  }
-
-  .section-label {
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    margin-bottom: 14px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  /* ── BASIC INFO ── */
-  .basic-info-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 12px;
-    margin-bottom: 28px;
-  }
-  .field-group { display: flex; flex-direction: column; gap: 5px; }
-  .field-label {
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--text-secondary);
-  }
-  .field-input {
-    font-family: var(--sans);
-    font-size: 13px;
-    padding: 7px 10px;
-    border: 1px solid var(--border);
-    border-radius: 5px;
-    background: var(--surface);
-    color: var(--text-primary);
-    transition: border-color 0.15s;
-    width: 100%;
-  }
-  .field-input:focus {
-    outline: none;
-    border-color: var(--accent-mid);
-    background: #FAFCFF;
-  }
-  select.field-input { cursor: pointer; }
-
-  /* ── FLOOR TABLE ── */
-  .floor-section { margin-bottom: 28px; }
-  .floor-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 12px;
-  }
-  .btn-add-floor {
-    font-family: var(--sans);
-    font-size: 11px;
-    font-weight: 500;
-    padding: 5px 12px;
-    border-radius: 4px;
-    border: 1.5px dashed var(--accent-mid);
-    background: var(--accent-light);
-    color: var(--accent);
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-  .btn-add-floor:hover { background: #DDE7FF; }
-
-  .floor-table-wrap { overflow-x: auto; }
-  table.floor-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 12px;
-  }
-  .floor-table th {
-    background: var(--surface2);
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--text-secondary);
-    padding: 8px 10px;
-    text-align: left;
-    border-bottom: 1px solid var(--border);
-    white-space: nowrap;
-  }
-  .floor-table td {
-    padding: 5px 4px;
-    border-bottom: 1px solid var(--border);
-    vertical-align: middle;
-  }
-  .floor-table tr:last-child td { border-bottom: none; }
-  .floor-table tr:hover td { background: #FAFAFA; }
-
-  .floor-table input[type="text"],
-  .floor-table input[type="number"],
-  .floor-table select {
-    font-family: var(--sans);
-    font-size: 12px;
-    padding: 5px 7px;
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    background: var(--surface);
-    color: var(--text-primary);
-    width: 100%;
-    transition: border-color 0.15s;
-  }
-  .floor-table input:focus,
-  .floor-table select:focus {
-    outline: none;
-    border-color: var(--accent-mid);
-    background: #FAFCFF;
-  }
-  .floor-table input[type="number"] { font-family: var(--mono); text-align: right; }
-
-  .col-floor { width: 80px; }
-  .col-use { width: 130px; }
-  .col-area { width: 90px; }
-  .col-common { width: 90px; }
-  .col-height { width: 80px; }
-  .col-unitprice { width: 100px; }
-  .col-subtotal { width: 90px; }
-  .col-del { width: 36px; }
-
-  .calc-result {
-    font-family: var(--mono);
-    font-size: 12px;
-    color: var(--text-secondary);
-    text-align: right;
-    padding-right: 8px;
-  }
-  .calc-result.highlight { color: var(--accent); font-weight: 500; }
-
-  .btn-del-row {
-    width: 24px; height: 24px;
-    border-radius: 4px;
-    border: none;
-    background: transparent;
-    color: var(--text-muted);
-    cursor: pointer;
-    font-size: 14px;
-    display: flex; align-items: center; justify-content: center;
-    transition: all 0.15s;
-  }
-  .btn-del-row:hover { background: #FEECEC; color: var(--warn); }
-
-  /* ── COEFF SECTION ── */
-  .coeff-section { margin-bottom: 28px; }
-  .coeff-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 12px;
-  }
-  .coeff-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 12px;
-  }
-  .coeff-name {
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    margin-bottom: 6px;
-  }
-  .coeff-value {
-    font-family: var(--mono);
-    font-size: 18px;
-    font-weight: 500;
-    color: var(--text-primary);
-  }
-  .coeff-sub {
-    font-size: 10px;
-    color: var(--text-muted);
-    margin-top: 2px;
-  }
-
-  /* ── EXTRA COSTS ── */
-  .extra-section { margin-bottom: 28px; }
-  .extra-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
-  .extra-item {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 10px 12px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-  }
-  .extra-label { font-size: 12px; color: var(--text-secondary); font-weight: 500; }
-  .extra-rate {
-    font-family: var(--mono);
-    font-size: 12px;
-    width: 60px;
-    padding: 4px 6px;
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    text-align: right;
-    background: var(--surface);
-    color: var(--text-primary);
-  }
-  .extra-rate:focus { outline: none; border-color: var(--accent-mid); }
-  .extra-suffix { font-size: 11px; color: var(--text-muted); white-space: nowrap; }
-
-  /* ── UNIT PRICE REFERENCE ── */
-  .unit-ref-section { margin-bottom: 20px; }
-  .unit-ref-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 11px;
-  }
-  .unit-ref-table th {
-    background: var(--surface2);
-    font-size: 10px;
-    font-weight: 600;
-    color: var(--text-muted);
-    padding: 6px 10px;
-    text-align: left;
-    letter-spacing: 0.05em;
-    border-bottom: 1px solid var(--border);
-  }
-  .unit-ref-table td {
-    padding: 6px 10px;
-    border-bottom: 1px solid var(--border);
-    color: var(--text-secondary);
-  }
-  .unit-ref-table td:last-child,
-  .unit-ref-table th:last-child { text-align: right; }
-  .unit-ref-table td input[type="number"] {
-    font-family: var(--mono);
-    font-size: 11px;
-    padding: 3px 6px;
-    border: 1px solid var(--border);
-    border-radius: 3px;
-    width: 70px;
-    text-align: right;
-    background: var(--surface);
-  }
-  .unit-ref-table td input[type="number"]:focus { outline: none; border-color: var(--accent-mid); }
-
-  /* ── RIGHT PANEL (RESULT) ── */
-  .right-panel {
-    background: var(--text-primary);
-    padding: 28px 24px;
-    position: sticky;
-    top: 52px;
-    height: calc(100vh - 52px);
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
-
-  .result-heading {
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.35);
-    margin-bottom: 4px;
-  }
-
-  .total-cost-display {
-    background: var(--accent);
-    border-radius: 8px;
-    padding: 18px 20px;
-  }
-  .total-label {
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.6);
-    margin-bottom: 6px;
-  }
-  .total-amount {
-    font-family: var(--mono);
-    font-size: 28px;
-    font-weight: 500;
-    color: white;
-    line-height: 1;
-  }
-  .total-unit { font-size: 13px; opacity: 0.7; margin-left: 4px; }
-  .total-sub {
-    font-size: 11px;
-    color: rgba(255,255,255,0.55);
-    margin-top: 6px;
-    font-family: var(--mono);
-  }
-
-  .result-block {
-    background: rgba(255,255,255,0.05);
-    border-radius: 6px;
-    padding: 14px 16px;
-  }
-  .result-block-title {
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.35);
-    margin-bottom: 10px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
-  }
-
-  .result-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    padding: 4px 0;
-    gap: 8px;
-  }
-  .result-row-label {
-    font-size: 12px;
-    color: rgba(255,255,255,0.55);
-    flex: 1;
-    min-width: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .result-row-value {
-    font-family: var(--mono);
-    font-size: 12px;
-    color: rgba(255,255,255,0.85);
-    white-space: nowrap;
-  }
-  .result-row.total-row .result-row-label { color: rgba(255,255,255,0.8); font-weight: 500; }
-  .result-row.total-row .result-row-value { color: white; font-weight: 500; }
-  .result-row.sub-row { padding: 2px 0; }
-  .result-row.sub-row .result-row-label { font-size: 11px; padding-left: 8px; color: rgba(255,255,255,0.35); }
-  .result-row.sub-row .result-row-value { font-size: 11px; color: rgba(255,255,255,0.5); }
-  .result-divider {
-    height: 1px;
-    background: rgba(255,255,255,0.08);
-    margin: 6px 0;
-  }
-
-  .notice-box {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 6px;
-    padding: 10px 12px;
-    font-size: 10px;
-    color: rgba(255,255,255,0.3);
-    line-height: 1.7;
-    margin-top: auto;
-  }
-
-  /* ── TABS ── */
-  .tab-bar {
-    display: flex;
-    gap: 0;
-    margin-bottom: 20px;
-    border-bottom: 2px solid var(--border);
-  }
-  .tab-btn {
-    font-family: var(--sans);
-    font-size: 12px;
-    font-weight: 500;
-    padding: 8px 16px;
-    border: none;
-    background: transparent;
-    color: var(--text-muted);
-    cursor: pointer;
-    border-bottom: 2px solid transparent;
-    margin-bottom: -2px;
-    transition: all 0.15s;
-    letter-spacing: 0.03em;
-  }
-  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
-  .tab-btn:hover:not(.active) { color: var(--text-secondary); }
-  .tab-content { display: none; }
-  .tab-content.active { display: block; }
-
-  /* ── PRINT STYLES ── */
-  @media print {
-    header, .right-panel, .tab-bar, .btn-add-floor, .btn-del-row, .btn-header { display: none !important; }
-    .layout { display: block; }
-    .left-panel { border: none; padding: 0; }
-    .print-result { display: block !important; }
-    body { background: white; }
-  }
-
-  .print-result {
-    display: none;
-    margin-top: 20px;
-  }
-
-  /* ── MISC ── */
-  .tag {
-    display: inline-block;
-    font-size: 10px;
-    font-weight: 500;
-    padding: 2px 7px;
-    border-radius: 3px;
-    background: var(--tag-bg);
-    color: var(--text-secondary);
-  }
-  .tag.blue { background: var(--accent-light); color: var(--accent); }
-  .tag.green { background: var(--positive-light); color: var(--positive); }
-
-  .floor-num-label {
-    font-family: var(--mono);
-    font-size: 12px;
-    padding: 5px 7px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    color: var(--text-secondary);
-    text-align: center;
-    width: 100%;
-  }
-
-  .sum-row td {
-    background: var(--surface2) !important;
-    font-weight: 600;
-    font-size: 12px;
-    padding: 7px 10px;
-    border-top: 2px solid var(--border-strong);
-  }
-  .sum-row .sum-num {
-    font-family: var(--mono);
-    text-align: right;
-    color: var(--accent);
-  }
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap');
+:root{--bg:#F2F1EE;--surface:#FFF;--surface2:#ECEAE5;--border:#DEDAD3;--text:#1C1B18;--text2:#6B6760;--muted:#9E9A94;--accent:#2B5BE0;--accent-light:#EBF0FF;--accent-mid:#7B9FF5;--warn:#C94F1A;--warn-light:#FFF0EB;--green:#1A7A4A;--green-light:#E8F7EF;--dark:#1C1B18;--mono:'DM Mono',monospace;--sans:'Noto Sans KR',sans-serif;--r:10px;--touch:44px}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;min-height:100vh;padding-bottom:72px}
+header{background:var(--dark);color:#fff;padding:0 16px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200}
+.hdr-title{font-size:13px;font-weight:600;letter-spacing:.06em;opacity:.9}
+.hdr-acts{display:flex;gap:6px}
+.btn-sm{font-family:var(--sans);font-size:11px;font-weight:500;padding:0 10px;height:32px;border-radius:6px;border:1px solid rgba(255,255,255,.2);background:transparent;color:#fff;cursor:pointer;white-space:nowrap}
+.btn-sm:active{background:rgba(255,255,255,.15)}
+.btn-sm.pri{background:var(--accent);border-color:var(--accent)}
+.banner{background:var(--dark);padding:12px 16px 14px;position:sticky;top:52px;z-index:150;border-bottom:1px solid rgba(255,255,255,.08)}
+.banner-inner{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+.b-label{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:2px}
+.b-amount{font-family:var(--mono);font-size:28px;font-weight:500;color:#fff;line-height:1}
+.b-unit{font-size:13px;color:rgba(255,255,255,.45);margin-left:3px}
+.b-sub{font-size:11px;color:rgba(255,255,255,.35);margin-top:3px;font-family:var(--mono)}
+.b-chips{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.b-chip{font-size:11px;font-family:var(--mono);color:rgba(255,255,255,.5);background:rgba(255,255,255,.07);padding:3px 8px;border-radius:4px;white-space:nowrap}
+.b-chip span{color:rgba(255,255,255,.85)}
+.banner.profit{background:#145C38}
+.banner.loss{background:#8B2000}
+.banner.profit .b-label,.banner.loss .b-label{color:rgba(255,255,255,.5)}
+/* BEP card */
+.bep-card{background:var(--surface);border:2px solid var(--accent-mid);border-radius:var(--r);padding:14px 16px;margin-bottom:16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.bep-left{flex:1;min-width:0}
+.bep-tag{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:4px}
+.bep-desc{font-size:12px;color:var(--text2);line-height:1.5}
+.bep-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.bep-val{font-family:var(--mono);font-size:22px;font-weight:500;color:var(--accent);white-space:nowrap}
+.bep-inp-wrap{display:flex;align-items:center;gap:6px}
+.bep-inp{font-family:var(--mono);font-size:16px;width:100px;padding:5px 10px;border:2px solid var(--accent-mid);border-radius:7px;text-align:right;background:var(--accent-light);color:var(--accent);height:38px}
+.bep-inp:focus{outline:none;border-color:var(--accent)}
+.bep-unit{font-size:12px;color:var(--text2)}
+.main{padding:16px;max-width:960px;margin:0 auto}
+.top-tabs{display:flex;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:3px;gap:3px;margin-bottom:16px}
+.top-tab{flex:1;height:38px;border:none;border-radius:8px;background:transparent;font-family:var(--sans);font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;transition:all .15s}
+.top-tab.active{background:var(--dark);color:#fff}
+.sub-tabs{display:flex;gap:0;margin-bottom:16px;border-bottom:2px solid var(--border)}
+.sub-tab{font-family:var(--sans);font-size:12px;font-weight:500;padding:7px 14px;border:none;background:transparent;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px}
+.sub-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.section{margin-bottom:20px}
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.sec-label{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:4px}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fg.c1{grid-template-columns:1fr}
+.field{display:flex;flex-direction:column;gap:5px}
+.field.s2{grid-column:span 2}
+.fl{font-size:11px;font-weight:500;color:var(--text2);display:flex;align-items:center;gap:4px}
+.fi{font-family:var(--sans);font-size:15px;padding:0 12px;height:var(--touch);border:1.5px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);width:100%;-webkit-appearance:none;transition:border-color .15s}
+.fi:focus{outline:none;border-color:var(--accent-mid)}
+input[type=number].fi{font-family:var(--mono)}
+select.fi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%239E9A94' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;cursor:pointer}
+.tip-wrap{position:relative;display:inline-flex}
+.tip-btn{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--muted);background:transparent;color:var(--muted);font-size:10px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.tip-box{display:none;position:absolute;left:22px;top:-4px;z-index:999;width:250px;background:var(--dark);color:rgba(255,255,255,.85);font-size:11px;font-weight:400;line-height:1.65;padding:10px 12px;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.35);white-space:normal;pointer-events:auto}
+.tip-wrap:hover .tip-box,.tip-btn:focus+.tip-box{display:block}
+.tip-box a{color:var(--accent-mid);text-decoration:none}
+.tip-box a:hover{text-decoration:underline}
+.floor-list{display:flex;flex-direction:column;gap:10px}
+.floor-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden}
+.floor-card:focus-within{border-color:var(--accent-mid)}
+.fc-head{display:flex;align-items:center;padding:9px 12px;background:var(--surface2);border-bottom:1px solid var(--border);gap:8px}
+.fn-input{font-family:var(--mono);font-size:14px;font-weight:500;width:68px;padding:4px 8px;border:1px solid var(--border);border-radius:5px;background:#fff;color:var(--text);text-align:center}
+.fn-input:focus{outline:none;border-color:var(--accent-mid)}
+.fc-badge{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--accent);background:var(--accent-light);padding:3px 9px;border-radius:5px;margin-left:auto;white-space:nowrap}
+.fc-ug{font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;background:var(--warn-light);color:var(--warn);border:1px solid #F5C4B0;white-space:nowrap}
+.btn-del{width:28px;height:28px;border-radius:6px;border:none;background:transparent;color:var(--muted);cursor:pointer;font-size:17px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.btn-del:active{background:#FEECEC;color:var(--warn)}
+.fc-body{padding:12px;display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.fc-body .s2{grid-column:span 2}
+.ffl{font-size:11px;font-weight:500;color:var(--text2);margin-bottom:4px;display:flex;align-items:center;gap:4px}
+.ffi{font-family:var(--sans);font-size:15px;padding:0 10px;height:40px;border:1.5px solid var(--border);border-radius:7px;background:var(--bg);color:var(--text);width:100%;-webkit-appearance:none}
+.ffi:focus{outline:none;border-color:var(--accent-mid);background:#fff}
+input[type=number].ffi{font-family:var(--mono);text-align:right}
+select.ffi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%239E9A94' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px;cursor:pointer;background-color:var(--bg)}
+.btn-add{width:100%;height:44px;border-radius:var(--r);border:1.5px dashed var(--accent-mid);background:var(--accent-light);color:var(--accent);font-family:var(--sans);font-size:14px;font-weight:500;cursor:pointer;margin-top:4px}
+.btn-add:active{background:#DDE7FF}
+.btn-add.g{border-color:#6DB890;background:var(--green-light);color:var(--green)}
+.coeff-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.coeff-card{background:var(--surface);border:1.5px solid var(--border);border-radius:8px;padding:10px 12px}
+.cc-name{font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.cc-val{font-family:var(--mono);font-size:18px;font-weight:500;color:var(--text)}
+.cc-sub{font-size:10px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rblock{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:12px}
+.rblock-head{padding:10px 14px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none}
+.chevron{font-size:11px;color:var(--muted);transition:transform .2s}
+.rblock-head.open .chevron{transform:rotate(180deg)}
+.rblock-body{padding:10px 14px;display:none}
+.rblock-body.open{display:block}
+.rr{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:1px solid var(--surface2);gap:8px}
+.rr:last-child{border-bottom:none}
+.rr-l{font-size:12px;color:var(--text2);flex:1}
+.rr-v{font-family:var(--mono);font-size:12px;color:var(--text);white-space:nowrap}
+.rr.strong .rr-l{font-weight:600;color:var(--text)}
+.rr.strong .rr-v{font-weight:600;color:var(--accent)}
+.rr.strong.gn .rr-v{color:var(--green)}
+.rr.strong.rd .rr-v{color:var(--warn)}
+.rr.ind .rr-l{padding-left:10px;font-size:11px;color:var(--muted)}
+.rr.ind .rr-v{font-size:11px;color:var(--muted)}
+.r-div{height:1px;background:var(--border);margin:4px 0}
+.unit-tbl{width:100%;border-collapse:collapse;font-size:12px}
+.unit-tbl th{background:var(--surface2);padding:7px 10px;font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)}
+.unit-tbl th:not(:first-child){text-align:right}
+.unit-tbl td{padding:6px 10px;border-bottom:1px solid var(--surface2);color:var(--text2);vertical-align:middle}
+.unit-tbl td:first-child{font-weight:500;color:var(--text)}
+.unit-tbl input[type=number]{font-family:var(--mono);font-size:13px;width:64px;padding:4px 6px;border:1px solid var(--border);border-radius:5px;text-align:right;background:var(--bg);height:32px}
+.unit-tbl input:focus{outline:none;border-color:var(--accent-mid)}
+.extra-list{display:flex;flex-direction:column;gap:8px}
+.extra-item{display:flex;align-items:center;background:var(--surface);border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;gap:10px}
+.ex-label{font-size:13px;font-weight:500;color:var(--text2);flex:1}
+.ex-inp{font-family:var(--mono);font-size:15px;width:64px;padding:0 8px;height:36px;border:1.5px solid var(--border);border-radius:6px;text-align:right;background:var(--bg)}
+.ex-inp:focus{outline:none;border-color:var(--accent-mid);background:#fff}
+.ex-sfx{font-size:12px;color:var(--muted);width:14px}
+.chart-wrap{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:12px;overflow-x:auto}
+.chart-title{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text2);margin-bottom:12px}
+#cfChart{width:100%;min-width:280px;height:200px}
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.kpi-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:14px}
+.kpi-label{font-size:10px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.kpi-val{font-family:var(--mono);font-size:22px;font-weight:500;color:var(--text);line-height:1}
+.kpi-unit{font-size:12px;color:var(--muted);margin-left:2px}
+.kpi-sub{font-size:10px;color:var(--muted);margin-top:4px}
+.kpi-card.acc{background:var(--accent);border-color:var(--accent)}
+.kpi-card.acc .kpi-label,.kpi-card.acc .kpi-unit,.kpi-card.acc .kpi-sub{color:rgba(255,255,255,.5)}
+.kpi-card.acc .kpi-val{color:#fff}
+.kpi-card.gn{background:var(--green);border-color:var(--green)}
+.kpi-card.gn .kpi-label,.kpi-card.gn .kpi-unit,.kpi-card.gn .kpi-sub{color:rgba(255,255,255,.5)}
+.kpi-card.gn .kpi-val{color:#fff}
+.kpi-card.rd{border-color:var(--warn);background:var(--warn-light)}
+.kpi-card.rd .kpi-val{color:var(--warn)}
+.notice{font-size:11px;color:var(--muted);line-height:1.7;padding:12px 14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;margin-top:8px}
+.notice a{color:var(--accent);text-decoration:none}
+.rev-card{margin-bottom:12px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:12px}
+.btm-bar{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);padding:10px 16px;display:flex;gap:8px;z-index:300}
+.btm-btn{flex:1;height:44px;border-radius:10px;border:1.5px solid var(--border);background:var(--surface);font-family:var(--sans);font-size:14px;font-weight:500;color:var(--text2);cursor:pointer}
+.btm-btn.pri{background:var(--accent);border-color:var(--accent);color:#fff;flex:2}
+.btm-btn:active{opacity:.8}
+@media(min-width:768px){body{padding-bottom:0}.btm-bar{display:none}header{padding:0 28px}.banner{padding:14px 28px 16px}.main{padding:24px 28px}.fg{grid-template-columns:repeat(3,1fr)}.fc-body{grid-template-columns:repeat(3,1fr)}.coeff-row{grid-template-columns:repeat(4,1fr)}.kpi-grid{grid-template-columns:repeat(4,1fr)}}
+@media print{header,.banner,.top-tabs,.sub-tabs,.btm-bar,.btn-add,.btn-del,.btn-sm{display:none!important}body{background:#fff;padding:0}.rblock-body{display:block!important}.main{padding:0}}
 </style>
 </head>
 <body>
-
 <header>
-  <span class="header-title">건축공사비 초기검토</span>
-  <div class="header-actions">
-    <button class="btn-header" onclick="saveData()">저장</button>
-    <button class="btn-header" onclick="loadData()">불러오기</button>
-    <button class="btn-header primary" onclick="printReport()">인쇄 / PDF</button>
+  <span class="hdr-title">공사비 · 사업성 검토</span>
+  <div class="hdr-acts">
+    <button class="btn-sm" onclick="loadData()">불러오기</button>
+    <button class="btn-sm" onclick="saveData()">저장</button>
+    <button class="btn-sm pri" onclick="window.print()">인쇄</button>
   </div>
 </header>
-
-<div class="layout">
-  <!-- LEFT -->
-  <div class="left-panel">
-    <div class="tab-bar">
-      <button class="tab-btn active" onclick="switchTab('input')">입력</button>
-      <button class="tab-btn" onclick="switchTab('unitprice')">단가 기준</button>
-      <button class="tab-btn" onclick="switchTab('extra')">간접비 설정</button>
-    </div>
-
-    <!-- TAB: INPUT -->
-    <div class="tab-content active" id="tab-input">
-
-      <!-- 기본정보 -->
-      <div class="section-label">건물 기본정보</div>
-      <div class="basic-info-grid">
-        <div class="field-group">
-          <label class="field-label">건물명 (임의)</label>
-          <input type="text" class="field-input" id="bldName" placeholder="예: 성산동 근생건물" oninput="recalc()">
-        </div>
-        <div class="field-group">
-          <label class="field-label">구조 형식</label>
-          <select class="field-input" id="structType" onchange="recalc()">
-            <option value="1.00">RC조 (기준)</option>
-            <option value="1.12">철골조</option>
-            <option value="1.25">목구조</option>
-            <option value="0.90">조적조</option>
-          </select>
-        </div>
-        <div class="field-group">
-          <label class="field-label">지역</label>
-          <select class="field-input" id="region" onchange="recalc()">
-            <option value="1.00">서울</option>
-            <option value="0.97">경기·인천</option>
-            <option value="0.92">지방 광역시</option>
-            <option value="0.87">기타 지방</option>
-          </select>
-        </div>
-        <div class="field-group">
-          <label class="field-label">기준 층고 (m)</label>
-          <input type="number" class="field-input" id="baseHeight" value="2.8" step="0.1" min="2.0" oninput="recalc()" style="font-family:var(--mono)">
-        </div>
-        <div class="field-group">
-          <label class="field-label">VAT 포함</label>
-          <select class="field-input" id="vatYN" onchange="recalc()">
-            <option value="1.10">포함 (10%)</option>
-            <option value="1.00">별도</option>
-          </select>
-        </div>
-        <div class="field-group">
-          <label class="field-label">단가 기준 연도</label>
-          <input type="text" class="field-input" id="priceYear" value="2025년" oninput="recalc()">
-        </div>
-      </div>
-
-      <!-- 층별 입력 -->
-      <div class="floor-section">
-        <div class="floor-header">
-          <div class="section-label" style="margin-bottom:0; border:none;">층별 면적 및 용도</div>
-          <button class="btn-add-floor" onclick="addFloor()">+ 층 추가</button>
-        </div>
-        <div class="floor-table-wrap">
-          <table class="floor-table" id="floorTable">
-            <thead>
-              <tr>
-                <th class="col-floor">층</th>
-                <th class="col-use">용도</th>
-                <th class="col-area">전용면적 (㎡)</th>
-                <th class="col-common">공용면적 (㎡)</th>
-                <th class="col-height">층고 (m)</th>
-                <th class="col-unitprice">단가 (만원/㎡)</th>
-                <th class="col-subtotal">소계 (만원)</th>
-                <th class="col-del"></th>
-              </tr>
-            </thead>
-            <tbody id="floorBody">
-            </tbody>
-            <tfoot>
-              <tr class="sum-row">
-                <td colspan="2" style="color:var(--text-secondary); font-size:11px;">합계</td>
-                <td class="sum-num" id="sumPrivate">—</td>
-                <td class="sum-num" id="sumCommon">—</td>
-                <td></td>
-                <td></td>
-                <td class="sum-num" id="sumSubtotal">—</td>
-                <td></td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
-      </div>
-
-      <!-- 계수 요약 -->
-      <div class="coeff-section">
-        <div class="section-label">적용 계수</div>
-        <div class="coeff-grid">
-          <div class="coeff-card">
-            <div class="coeff-name">구조계수</div>
-            <div class="coeff-value" id="dispStruct">1.00</div>
-            <div class="coeff-sub">RC조 기준</div>
-          </div>
-          <div class="coeff-card">
-            <div class="coeff-name">지역계수</div>
-            <div class="coeff-value" id="dispRegion">1.00</div>
-            <div class="coeff-sub">서울</div>
-          </div>
-          <div class="coeff-card">
-            <div class="coeff-name">오차범위</div>
-            <div class="coeff-value" style="color:var(--warn)">±20%</div>
-            <div class="coeff-sub">개략 추정치</div>
-          </div>
-        </div>
-      </div>
-
-    </div><!-- /tab-input -->
-
-    <!-- TAB: UNIT PRICE -->
-    <div class="tab-content" id="tab-unitprice">
-      <div class="section-label">용도별 ㎡당 기준단가 (만원/㎡, 직접 수정 가능)</div>
-      <div style="font-size:11px; color:var(--text-muted); margin-bottom:14px;">
-        RC조·서울 기준 / 2025년 시세 기반 추정치. 시장 여건에 따라 직접 수정하여 사용.
-      </div>
-      <table class="unit-ref-table" id="unitRefTable">
-        <thead>
-          <tr>
-            <th>용도</th>
-            <th>최소</th>
-            <th>기준 (평균)</th>
-            <th>최대</th>
-          </tr>
-        </thead>
-        <tbody id="unitRefBody">
-        </tbody>
-      </table>
-      <div style="margin-top:14px; font-size:10px; color:var(--text-muted); line-height:1.8;">
-        * 층별 입력에서 단가를 직접 입력하지 않으면 이 기준단가(평균값)가 자동 적용됩니다.<br>
-        * 지하주차장은 지하층 기준이며, 지상 주차 시 별도 조정 필요.<br>
-        * 인테리어·특수마감 포함 시 20~40% 가산 고려.
-      </div>
-    </div>
-
-    <!-- TAB: EXTRA -->
-    <div class="tab-content" id="tab-extra">
-      <div class="section-label">간접비 및 부대비용 설정 (직접공사비 기준 %)</div>
-      <div class="extra-grid" id="extraGrid">
-      </div>
-      <div style="margin-top:16px; font-size:10px; color:var(--text-muted); line-height:1.8;">
-        * 설계비·감리비는 별도 표기되며 공사비 합계에 포함되지 않습니다.<br>
-        * 외부공사비: 대지면적·조경 범위에 따라 별도 산정 권장.<br>
-        * 이 비율은 추정 기준이며 발주방식·규모에 따라 달라집니다.
-      </div>
-    </div>
-
-  </div><!-- /left-panel -->
-
-  <!-- RIGHT -->
-  <div class="right-panel">
+<div class="banner" id="bannerEl">
+  <div class="banner-inner">
     <div>
-      <div class="result-heading">공사비 산출 결과</div>
-      <div style="font-size:11px; color:rgba(255,255,255,0.3); margin-top:2px;" id="resultBldName">—</div>
+      <div class="b-label" id="bannerLabel">총 공사비 (VAT 포함)</div>
+      <div><span class="b-amount" id="bannerTotal">—</span><span class="b-unit" id="bannerUnit">억원</span></div>
+      <div class="b-sub" id="bannerSub">—</div>
     </div>
-
-    <!-- 총공사비 -->
-    <div class="total-cost-display">
-      <div class="total-label">총 공사비 (VAT 포함)</div>
-      <div class="total-amount"><span id="totalVAT">—</span><span class="total-unit">억원</span></div>
-      <div class="total-sub" id="totalVATSub">—</div>
-    </div>
-
-    <!-- 층별 공사비 -->
-    <div class="result-block">
-      <div class="result-block-title">층별 공사비</div>
-      <div id="floorResultRows"></div>
-    </div>
-
-    <!-- 공사비 구성 -->
-    <div class="result-block">
-      <div class="result-block-title">공사비 구성</div>
-      <div id="costBreakdown"></div>
-    </div>
-
-    <!-- 면적 요약 -->
-    <div class="result-block">
-      <div class="result-block-title">면적 요약</div>
-      <div id="areaSummary"></div>
-    </div>
-
-    <div class="notice-box">
-      본 산출은 개략 추정치(±20%)이며 사업성 검토 및 대안 비교 목적으로만 활용. 실시설계 완료 후 정밀 물량산출 필요. 단가는 <span id="noticeYear">2025년</span> 기준.
+    <div class="b-chips">
+      <div class="b-chip"><span id="bChip1Label">연면적 </span><span id="bChip1">—</span></div>
+      <div class="b-chip"><span id="bChip2Label">㎡당 </span><span id="bChip2">—</span></div>
     </div>
   </div>
 </div>
+<div class="main">
+  <div class="top-tabs">
+    <button class="top-tab active" onclick="switchTop('cost',this)">공사비 산출</button>
+    <button class="top-tab" onclick="switchTop('fs',this)">사업성 검토</button>
+  </div>
 
+  <!-- COST -->
+  <div id="top-cost">
+    <div class="sub-tabs">
+      <button class="sub-tab active" onclick="switchSub('ci',this)">입력</button>
+      <button class="sub-tab" onclick="switchSub('cr',this)">결과</button>
+      <button class="sub-tab" onclick="switchSub('cs',this)">단가·간접비</button>
+    </div>
+    <div id="sub-ci">
+      <div class="section">
+        <div class="sec-head"><div class="sec-label">건물 기본정보</div></div>
+        <div class="fg c1" style="margin-bottom:10px">
+          <div class="field"><label class="fl">건물명</label><input type="text" class="fi" id="bldName" placeholder="예: OO동 OO빌딩" oninput="recalcCost()"></div>
+        </div>
+        <div class="fg">
+          <div class="field"><label class="fl">구조 형식 <span class="tip-wrap"><button class="tip-btn">?</button><div class="tip-box">RC조=기준(1.00), 철골조=+12%, 목구조=+25%, 조적조=-10%<br><a href="https://www.kict.re.kr" target="_blank">KICT 건설공사비지수 →</a></div></span></label>
+            <select class="fi" id="structType" onchange="recalcCost()"><option value="1.00">RC조 (기준)</option><option value="1.12">철골조</option><option value="1.25">목구조</option><option value="0.90">조적조</option></select></div>
+          <div class="field"><label class="fl">지역 <span class="tip-wrap"><button class="tip-btn">?</button><div class="tip-box">서울=1.00 기준. 수도권-3%, 지방광역-8%, 기타지방-13%<br><a href="https://stat.molit.go.kr" target="_blank">국토부 건축공사비통계 →</a></div></span></label>
+            <select class="fi" id="region" onchange="recalcCost()"><option value="1.00">서울</option><option value="0.97">경기·인천</option><option value="0.92">지방 광역시</option><option value="0.87">기타 지방</option></select></div>
+          <div class="field"><label class="fl">기준층고 (m)</label><input type="number" class="fi" id="baseHeight" value="2.8" step="0.1" min="2.0" oninput="recalcCost()"></div>
+          <div class="field"><label class="fl">지하층 할증 <span class="tip-wrap"><button class="tip-btn">?</button><div class="tip-box">지하층은 흙막이·방수·양중 등으로 지상 대비 20~40% 가산이 일반적.<br><a href="https://www.kict.re.kr" target="_blank">KICT →</a></div></span></label>
+            <select class="fi" id="ugBonus" onchange="recalcCost()"><option value="1.20">+20% (최소)</option><option value="1.30" selected>+30% (표준)</option><option value="1.40">+40% (최대)</option><option value="1.00">적용 안함</option></select></div>
+          <div class="field"><label class="fl">VAT</label><select class="fi" id="vatYN" onchange="recalcCost()"><option value="1.10">포함 (10%)</option><option value="1.00">별도</option></select></div>
+          <div class="field"><label class="fl">단가 기준 연도</label><input type="text" class="fi" id="priceYear" value="2025년" oninput="recalcCost()"></div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="sec-head"><div class="sec-label">적용 계수</div></div>
+        <div class="coeff-row">
+          <div class="coeff-card"><div class="cc-name">구조</div><div class="cc-val" id="dStruct">1.00</div><div class="cc-sub" id="dStructL">RC조</div></div>
+          <div class="coeff-card"><div class="cc-name">지역</div><div class="cc-val" id="dRegion">1.00</div><div class="cc-sub" id="dRegionL">서울</div></div>
+          <div class="coeff-card"><div class="cc-name">지하 할증</div><div class="cc-val" id="dUG">×1.30</div><div class="cc-sub">지하층 적용</div></div>
+          <div class="coeff-card"><div class="cc-name">오차 범위</div><div class="cc-val" style="color:var(--warn)">±20%</div><div class="cc-sub">개략치</div></div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="sec-head"><div class="sec-label">층별 면적 및 용도</div></div>
+        <div class="floor-list" id="floorList"></div>
+        <button class="btn-add" onclick="addFloor()">+ 층 추가</button>
+      </div>
+    </div>
+    <div id="sub-cr" style="display:none">
+      <div class="rblock"><div class="rblock-head open" onclick="toggleBlock(this)">층별 공사비 <span class="chevron">▼</span></div><div class="rblock-body open" id="rdFloor"></div></div>
+      <div class="rblock"><div class="rblock-head open" onclick="toggleBlock(this)">공사비 구성 <span class="chevron">▼</span></div><div class="rblock-body open" id="rdBreakdown"></div></div>
+      <div class="rblock"><div class="rblock-head open" onclick="toggleBlock(this)">면적 요약 <span class="chevron">▼</span></div><div class="rblock-body open" id="rdArea"></div></div>
+      <div class="notice">개략 추정치(±20%). 단가 기준: <span id="noticeYear">2025년</span><br>
+        <a href="https://www.kict.re.kr" target="_blank">KICT 건설공사비지수</a> · <a href="https://stat.molit.go.kr" target="_blank">국토부 건축공사비통계</a> · <a href="https://www.pps.go.kr" target="_blank">조달청</a></div>
+    </div>
+    <div id="sub-cs" style="display:none">
+      <div class="section">
+        <div class="sec-head"><div class="sec-label">용도별 ㎡당 기준단가 (만원/㎡) <span class="tip-wrap"><button class="tip-btn">?</button><div class="tip-box">RC조·서울 기준 / 2025년 추정. 평균값이 자동 적용됩니다.<br><a href="https://www.kict.re.kr" target="_blank">KICT →</a> <a href="https://stat.molit.go.kr" target="_blank">국토부 →</a></div></span></div></div>
+        <div class="rblock"><table class="unit-tbl"><thead><tr><th>용도</th><th>최소</th><th>평균</th><th>최대</th></tr></thead><tbody id="unitRefBody"></tbody></table></div>
+      </div>
+      <div class="section">
+        <div class="sec-head"><div class="sec-label">간접비 설정 (직접공사비 %) <span class="tip-wrap"><button class="tip-btn">?</button><div class="tip-box">법정상한: 일반관리비 6%, 이윤 15% (국가계약법).<br><a href="https://www.pps.go.kr" target="_blank">조달청 원가계산기준 →</a></div></span></div></div>
+        <div class="extra-list" id="extraGrid"></div>
+        <button class="btn-add g" onclick="addExtraItem()" style="margin-top:8px">+ 간접비 항목 추가</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FEASIBILITY -->
+  <div id="top-fs" style="display:none">
+    <div class="sub-tabs">
+      <button class="sub-tab active" onclick="switchFSub('fi',this)">수입·비용</button>
+      <button class="sub-tab" onclick="switchFSub('fcf',this)">현금흐름</button>
+      <button class="sub-tab" onclick="switchFSub('fr',this)">사업성 결과</button>
+    </div>
+    <div id="sub-fi">
+      <div class="section">
+        <div class="sec-head"><div class="sec-label">사업 개요</div></div>
+        <div class="fg">
+          <div class="field"><label class="fl">사업 유형</label><select class="fi" id="devType" onchange="buildRevenueInputs();recalcFS()"><option value="sale">분양 위주</option><option value="rent">임대 위주</option><option value="mixed">복합 (분양+임대)</option></select></div>
+          <div class="field"><label class="fl">인허가 기간 (개월)</label><input type="number" class="fi" id="permitM" value="12" min="1" oninput="recalcFS()"></div>
+          <div class="field"><label class="fl">공사 기간 (개월)</label><input type="number" class="fi" id="constM" value="18" min="1" oninput="recalcFS()"></div>
+          <div class="field"><label class="fl">분양·임대 완료 (개월)</label><input type="number" class="fi" id="saleM" value="6" min="0" oninput="recalcFS()"></div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="sec-head"><div class="sec-label">토지비</div></div>
+        <div class="fg">
+          <div class="field"><label class="fl">입력 방식</label><select class="fi" id="landMode" onchange="toggleLandMode();recalcFS()"><option value="direct">직접 입력 (억원)</option><option value="area">대지면적×단가 (㎡당 만원)</option></select></div>
+          <div class="field" id="landDirectF"><label class="fl">토지 매입가 (억원) <span class="tip-wrap"><button class="tip-btn">?</button><div class="tip-box"><a href="https://www.realtyprice.kr" target="_blank">부동산공시가격알리미 →</a><br><a href="https://rt.molit.go.kr" target="_blank">실거래가 공개시스템 →</a></div></span></label><input type="number" class="fi" id="landPrice" value="20" min="0" step="0.1" oninput="recalcFS()"></div>
+          <div class="field" id="landAreaF" style="display:none"><label class="fl">대지면적 (㎡)</label><input type="number" class="fi" id="landArea" value="500" min="0" oninput="recalcFS()"></div>
+          <div class="field" id="landUnitF" style="display:none"><label class="fl">토지단가 (만원/㎡)</label><input type="number" class="fi" id="landUnit" value="1000" min="0" oninput="recalcFS()"></div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="sec-head"><div class="sec-label">수입 (용도별)</div></div>
+        <div class="notice" style="margin-bottom:10px">층별 면적이 자동 연동됩니다. <a href="https://www.r-one.co.kr" target="_blank">한국부동산원 시세 →</a> <a href="https://rt.molit.go.kr" target="_blank">실거래가 →</a></div>
+        <div id="revenueInputs"></div>
+      </div>
+      <div class="section">
+        <div class="sec-head"><div class="sec-label">부대비용 (공사비 기준 %)</div></div>
+        <div class="extra-list" id="sideGrid"></div>
+        <button class="btn-add g" onclick="addSideItem()" style="margin-top:8px">+ 부대비용 항목 추가</button>
+      </div>
+      <div class="section">
+        <div class="sec-head"><div class="sec-label">금융 조건</div></div>
+        <div class="fg">
+          <div class="field"><label class="fl">PF 대출 비율 (%) <span class="tip-wrap"><button class="tip-btn">?</button><div class="tip-box">총사업비 대비 PF 대출 비율. 통상 60~70%.<br><a href="https://www.bok.or.kr" target="_blank">한국은행 기준금리 →</a></div></span></label><input type="number" class="fi" id="ltvRate" value="60" min="0" max="100" oninput="recalcFS()"></div>
+          <div class="field"><label class="fl">PF 금리 (%/년) <span class="tip-wrap"><button class="tip-btn">?</button><div class="tip-box">2025년 PF 대출금리: 1금융권 5~6%, 2금융권 7~10%.<br><a href="https://www.bok.or.kr" target="_blank">한국은행 →</a></div></span></label><input type="number" class="fi" id="pfRate" value="6.0" min="0" max="30" step="0.1" oninput="recalcFS()"></div>
+          <div class="field"><label class="fl">할인율·요구수익률 (%) <span class="tip-wrap"><button class="tip-btn">?</button><div class="tip-box">NPV·IRR 기준 할인율. KDI 사회적 할인율 4.5%(2023). 민간개발 통상 8~12% 적용.<br><a href="https://www.kdi.re.kr" target="_blank">KDI →</a></div></span></label><input type="number" class="fi" id="discRate" value="10.0" min="0" max="50" step="0.1" oninput="recalcFS()"></div>
+          <div class="field"><label class="fl">공사비 집행 패턴 <span class="tip-wrap"><button class="tip-btn">?</button><div class="tip-box">공사기간 4분기 분할 집행 비율.<br>전반집중: 30/30/25/15%<br>균등: 25/25/25/25%<br>후반집중: 10/20/35/35%</div></span></label><select class="fi" id="constPattern" onchange="recalcFS()"><option value="even">균등 분할</option><option value="front" selected>전반 집중</option><option value="back">후반 집중</option></select></div>
+        </div>
+      </div>
+    </div>
+    <div id="sub-fcf" style="display:none">
+      <div class="chart-wrap"><div class="chart-title">분기별 현금흐름 · 누적 (억원)</div><canvas id="cfChart"></canvas></div>
+      <div class="rblock"><div class="rblock-head open" onclick="toggleBlock(this)">분기별 현금흐름표 <span class="chevron">▼</span></div><div class="rblock-body open" id="cfTable"></div></div>
+    </div>
+    <div id="sub-fr" style="display:none">
+      <!-- 손익분기 분양가 카드 -->
+      <div class="bep-card" id="bepCard">
+        <div class="bep-left">
+          <div class="bep-tag">손익분기 분양가</div>
+          <div class="bep-desc" id="bepDesc">총사업비 ÷ 분양가능 전용면적 기준<br>이 값 이상이어야 적자를 면합니다.</div>
+        </div>
+        <div class="bep-right">
+          <div class="bep-val" id="bepVal">— 만원/㎡</div>
+          <div class="bep-inp-wrap">
+            <input type="number" class="bep-inp" id="bepAdj" placeholder="조정값" min="0" step="10"
+              oninput="applyBepAdj(this.value)" title="분양가를 직접 입력하면 수입·비용 탭의 분양가에 일괄 반영됩니다">
+            <span class="bep-unit">만원/㎡ 적용</span>
+          </div>
+        </div>
+      </div>
+      <div class="kpi-grid" id="kpiGrid"></div>
+      <div class="rblock"><div class="rblock-head open" onclick="toggleBlock(this)">총사업비 구성 <span class="chevron">▼</span></div><div class="rblock-body open" id="fsBreakdown"></div></div>
+      <div class="rblock"><div class="rblock-head open" onclick="toggleBlock(this)">수입 구성 <span class="chevron">▼</span></div><div class="rblock-body open" id="fsRevenue"></div></div>
+      <div class="notice">IRR: Newton-Raphson 분기 현금흐름 기반 연환산. NPV: 요구수익률 기준.<br><a href="https://www.kdi.re.kr" target="_blank">KDI 예비타당성 기준</a> · <a href="https://www.r-one.co.kr" target="_blank">한국부동산원</a></div>
+    </div>
+  </div>
+</div>
+<div class="btm-bar">
+  <button class="btm-btn" onclick="loadData()">불러오기</button>
+  <button class="btm-btn" onclick="saveData()">저장</button>
+  <button class="btm-btn pri" onclick="window.print()">인쇄 / PDF</button>
+</div>
 <script>
-// ── DATA DEFINITIONS ──
-const USE_OPTIONS = [
-  { key: 'retail1', label: '근린생활 1종', price: 185 },
-  { key: 'retail2', label: '근린생활 2종', price: 200 },
-  { key: 'parking_u', label: '지하주차장', price: 165 },
-  { key: 'parking_g', label: '지상주차장', price: 120 },
-  { key: 'apt',     label: '공동주택(아파트)', price: 245 },
-  { key: 'multi',   label: '다세대주택', price: 210 },
-  { key: 'office',  label: '업무시설', price: 220 },
-  { key: 'worship', label: '종교시설', price: 195 },
-  { key: 'etc',     label: '기타', price: 180 },
+const USE_OPTIONS=[
+  {key:'retail1',  label:'근린생활 1종',    price:185, sk:'retail'},
+  {key:'retail2',  label:'근린생활 2종',    price:200, sk:'retail'},
+  {key:'parking_u',label:'지하주차장',      price:165, sk:null},
+  {key:'parking_g',label:'지상주차장',      price:120, sk:null},
+  {key:'apt',      label:'공동주택(아파트)', price:245, sk:'apt'},
+  {key:'multi',    label:'다세대주택',      price:210, sk:'multi'},
+  {key:'office',   label:'업무시설',        price:220, sk:'office'},
+  {key:'worship',  label:'종교시설',        price:195, sk:null},
+  {key:'etc',      label:'기타',           price:180, sk:'etc'},
 ];
+const UNIT_PRICES={};
+const UP_INIT={retail1:{min:165,avg:185,max:210},retail2:{min:175,avg:200,max:230},parking_u:{min:145,avg:165,max:185},parking_g:{min:100,avg:120,max:140},apt:{min:220,avg:245,max:280},multi:{min:185,avg:210,max:240},office:{min:195,avg:220,max:255},worship:{min:170,avg:195,max:225},etc:{min:155,avg:180,max:210}};
+Object.assign(UNIT_PRICES,JSON.parse(JSON.stringify(UP_INIT)));
+const REV_GROUPS=[{key:'retail',label:'근린생활시설'},{key:'apt',label:'공동주택(아파트)'},{key:'multi',label:'다세대주택'},{key:'office',label:'업무시설'},{key:'etc',label:'기타'}];
+const revData={};REV_GROUPS.forEach(g=>{revData[g.key]={saleUnit:500,rentUnit:5,vacancy:5}});
+let extraItems=[],extraId=0;
+let sideItems=[],sideId=0;
+let floors=[],floorId=0;
+let _cfData=[];
 
-const UNIT_PRICES = {}; // key → { min, avg, max }
-const UP_INIT = {
-  retail1: { min:165, avg:185, max:210 },
-  retail2: { min:175, avg:200, max:230 },
-  parking_u: { min:145, avg:165, max:185 },
-  parking_g: { min:100, avg:120, max:140 },
-  apt:     { min:220, avg:245, max:280 },
-  multi:   { min:185, avg:210, max:240 },
-  office:  { min:195, avg:220, max:255 },
-  worship: { min:170, avg:195, max:225 },
-  etc:     { min:155, avg:180, max:210 },
-};
-Object.assign(UNIT_PRICES, JSON.parse(JSON.stringify(UP_INIT)));
-
-const EXTRA_DEFS = [
-  { key:'prelim', label:'가설공사', rate:4.0 },
-  { key:'elec',   label:'전기·통신공사', rate:7.0 },
-  { key:'mech',   label:'기계·위생공사', rate:6.0 },
-  { key:'fire',   label:'소방공사', rate:2.5 },
-  { key:'ext',    label:'외부공사(포장·조경)', rate:3.0 },
-  { key:'cont',   label:'예비비', rate:3.0 },
-];
-const extraRates = {};
-EXTRA_DEFS.forEach(d => { extraRates[d.key] = d.rate; });
-
-// floor rows state
-let floors = [];
-let floorId = 0;
-
-function defaultFloors() {
-  return [
-    { id: floorId++, name:'지하1', use:'parking_u', private:300, common:30, height:2.8, unitOverride:'' },
-    { id: floorId++, name:'1층',   use:'retail1',   private:180, common:20, height:4.2, unitOverride:'' },
-    { id: floorId++, name:'2층',   use:'retail2',   private:180, common:20, height:3.6, unitOverride:'' },
-    { id: floorId++, name:'3층',   use:'etc',        private:160, common:20, height:2.8, unitOverride:'' },
+window.onload=function(){
+  floors=[
+    {id:floorId++,name:'지하1',use:'parking_u',priv:300,common:30,height:2.8,unitOverride:'',ug:true},
+    {id:floorId++,name:'1층',  use:'retail1',  priv:180,common:20,height:4.2,unitOverride:'',ug:false},
+    {id:floorId++,name:'2층',  use:'retail2',  priv:180,common:20,height:3.6,unitOverride:'',ug:false},
+    {id:floorId++,name:'3층',  use:'etc',      priv:160,common:20,height:2.8,unitOverride:'',ug:false},
   ];
-}
-
-// ── INIT ──
-window.onload = function() {
-  buildUnitRefTable();
-  buildExtraGrid();
-  floors = defaultFloors();
-  renderFloors();
-  recalc();
+  [{label:'가설공사',rate:4.0},{label:'전기·통신공사',rate:7.0},{label:'기계·위생공사',rate:6.0},{label:'소방공사',rate:2.5},{label:'외부공사(포장·조경)',rate:3.0},{label:'예비비',rate:3.0}]
+    .forEach(d=>extraItems.push({id:extraId++,...d}));
+  [{label:'취득세',rate:4.6,tip:'토지매입가 기준 4.6% (주택 외 기준).'},{label:'설계비',rate:2.5,tip:'공사비 기준 2~3% 수준.'},{label:'감리비',rate:1.0,tip:'공사비 기준 0.8~1.5%.'},{label:'분양마케팅비',rate:1.5,tip:'분양수입 기준 1~2%. 임대전용 시 제외.'},{label:'금융수수료',rate:0.5,tip:'PF 대출금액 기준 0.5~1%.'}]
+    .forEach(d=>sideItems.push({id:sideId++,...d}));
+  buildUnitRefTable();renderExtraGrid();renderSideGrid();renderFloors();buildRevenueInputs();recalcCost();
+  const sv=localStorage.getItem('cck_v4');if(sv){try{applyData(JSON.parse(sv));}catch(e){}}
 };
 
-// ── UNIT REF TABLE ──
-function buildUnitRefTable() {
-  const body = document.getElementById('unitRefBody');
-  body.innerHTML = '';
-  USE_OPTIONS.forEach(u => {
-    const d = UNIT_PRICES[u.key];
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${u.label}</td>
-      <td><input type="number" value="${d.min}" min="50" max="1000" step="5"
-          onchange="UNIT_PRICES['${u.key}'].min=+this.value; USE_OPTIONS.find(x=>x.key==='${u.key}').price=UNIT_PRICES['${u.key}'].avg; recalc()"></td>
-      <td><input type="number" value="${d.avg}" min="50" max="1000" step="5"
-          onchange="UNIT_PRICES['${u.key}'].avg=+this.value; USE_OPTIONS.find(x=>x.key==='${u.key}').price=+this.value; recalc()"></td>
-      <td><input type="number" value="${d.max}" min="50" max="1000" step="5"
-          onchange="UNIT_PRICES['${u.key}'].max=+this.value; recalc()"></td>
-    `;
-    body.appendChild(tr);
-  });
-}
+function isUG(name){return /지하|b\d|basement/i.test(name);}
 
-// ── EXTRA GRID ──
-function buildExtraGrid() {
-  const g = document.getElementById('extraGrid');
-  g.innerHTML = '';
-  EXTRA_DEFS.forEach(d => {
-    const div = document.createElement('div');
-    div.className = 'extra-item';
-    div.innerHTML = `
-      <span class="extra-label">${d.label}</span>
-      <input type="number" class="extra-rate" value="${d.rate}" min="0" max="30" step="0.5"
-        onchange="extraRates['${d.key}']=+this.value; recalc()">
-      <span class="extra-suffix">%</span>
-    `;
-    g.appendChild(div);
-  });
-}
-
-// ── FLOOR RENDER ──
-function renderFloors() {
-  const tbody = document.getElementById('floorBody');
-  tbody.innerHTML = '';
-  floors.forEach((f, idx) => {
-    const tr = document.createElement('tr');
-    const useOpts = USE_OPTIONS.map(u =>
-      `<option value="${u.key}" ${f.use===u.key?'selected':''}>${u.label}</option>`
-    ).join('');
-    tr.innerHTML = `
-      <td class="col-floor">
-        <input type="text" value="${f.name}" placeholder="층명"
-          onchange="floors[${idx}].name=this.value; recalc()" style="font-family:var(--mono);text-align:center">
-      </td>
-      <td class="col-use">
-        <select onchange="floors[${idx}].use=this.value; recalc()">${useOpts}</select>
-      </td>
-      <td class="col-area">
-        <input type="number" value="${f.private}" min="0" step="1"
-          onchange="floors[${idx}].private=+this.value; recalc()">
-      </td>
-      <td class="col-common">
-        <input type="number" value="${f.common}" min="0" step="1"
-          onchange="floors[${idx}].common=+this.value; recalc()">
-      </td>
-      <td class="col-height">
-        <input type="number" value="${f.height}" min="2.0" max="20" step="0.1"
-          onchange="floors[${idx}].height=+this.value; recalc()">
-      </td>
-      <td class="col-unitprice">
-        <input type="number" value="${f.unitOverride||''}" placeholder="자동" min="0" step="5"
-          onchange="floors[${idx}].unitOverride=this.value===''?'':+this.value; recalc()">
-      </td>
-      <td class="col-subtotal calc-result highlight" id="sub_${f.id}">—</td>
-      <td class="col-del">
-        <button class="btn-del-row" onclick="removeFloor(${idx})" title="삭제">×</button>
-      </td>
-    `;
-    tbody.appendChild(tr);
-  });
-}
-
-function addFloor() {
-  floors.push({ id: floorId++, name:`${floors.length+1}층`, use:'retail1', private:150, common:20, height:2.8, unitOverride:'' });
-  renderFloors();
-  recalc();
-}
-
-function removeFloor(idx) {
-  if (floors.length <= 1) return;
-  floors.splice(idx, 1);
-  renderFloors();
-  recalc();
-}
-
-// ── CALC ──
-function getHeightCoeff(h, base) {
-  const b = parseFloat(base) || 2.8;
-  // 층고가 기준층고 대비 높을수록 가산 (선형, 상한 1.3)
-  const ratio = h / b;
-  return Math.min(Math.max(ratio * 0.9 + 0.1, 0.85), 1.35);
-}
-
-function recalc() {
-  const structCoeff = parseFloat(document.getElementById('structType').value) || 1.0;
-  const regionCoeff = parseFloat(document.getElementById('region').value) || 1.0;
-  const baseH = parseFloat(document.getElementById('baseHeight').value) || 2.8;
-  const vatMult = parseFloat(document.getElementById('vatYN').value) || 1.1;
-  const priceYear = document.getElementById('priceYear').value;
-
-  // update display
-  document.getElementById('dispStruct').textContent = structCoeff.toFixed(2);
-  document.getElementById('dispRegion').textContent = regionCoeff.toFixed(2);
-  document.getElementById('noticeYear').textContent = priceYear;
-  document.getElementById('resultBldName').textContent =
-    document.getElementById('bldName').value || '(건물명 미입력)';
-
-  const structSel = document.getElementById('structType');
-  const regionSel = document.getElementById('region');
-  document.querySelector('[id=dispStruct]').nextElementSibling.textContent =
-    structSel.options[structSel.selectedIndex].text;
-  document.querySelector('[id=dispRegion]').nextElementSibling.textContent =
-    regionSel.options[regionSel.selectedIndex].text;
-
-  let totalPrivate = 0, totalCommon = 0, totalDirect = 0;
-  const floorResults = [];
-  const useAccum = {}; // use → { area, cost }
-
-  floors.forEach((f, idx) => {
-    const useObj = USE_OPTIONS.find(u => u.key === f.use) || USE_OPTIONS[0];
-    const basePrice = f.unitOverride !== '' ? +f.unitOverride : useObj.price;
-    const hCoeff = getHeightCoeff(f.height, baseH);
-    const totalArea = (f.private || 0) + (f.common || 0);
-    const cost = Math.round(totalArea * basePrice * hCoeff * structCoeff * regionCoeff);
-
-    totalPrivate += (f.private || 0);
-    totalCommon += (f.common || 0);
-    totalDirect += cost;
-
-    floorResults.push({ name: f.name, use: useObj.label, area: totalArea, cost });
-
-    // update inline
-    const cell = document.getElementById(`sub_${f.id}`);
-    if (cell) cell.textContent = cost > 0 ? fmt(cost) : '—';
-
-    // accumulate by use
-    if (!useAccum[useObj.label]) useAccum[useObj.label] = { area:0, cost:0 };
-    useAccum[useObj.label].area += totalArea;
-    useAccum[useObj.label].cost += cost;
-  });
-
-  // table footer
-  document.getElementById('sumPrivate').textContent = fmtA(totalPrivate);
-  document.getElementById('sumCommon').textContent = fmtA(totalCommon);
-  document.getElementById('sumSubtotal').textContent = fmt(totalDirect);
-
-  // indirect costs
-  let indirectTotal = 0;
-  const indirectBreakdown = [];
-  EXTRA_DEFS.forEach(d => {
-    const rate = extraRates[d.key] || 0;
-    const amt = Math.round(totalDirect * rate / 100);
-    indirectTotal += amt;
-    indirectBreakdown.push({ label: d.label, rate, amt });
-  });
-
-  const preVAT = totalDirect + indirectTotal;
-  const withVAT = Math.round(preVAT * vatMult);
-
-  // right panel
-  // total
-  document.getElementById('totalVAT').textContent = toEok(withVAT);
-  document.getElementById('totalVATSub').textContent =
-    `VAT ${vatMult>1?'포함':'별도'} · ${fmt(withVAT)} 만원`;
-
-  // floor rows
-  const fr = document.getElementById('floorResultRows');
-  fr.innerHTML = floorResults.map(f =>
-    `<div class="result-row sub-row">
-      <span class="result-row-label">${f.name} <span style="opacity:.5;font-size:10px;">${f.use}</span></span>
-      <span class="result-row-value">${fmt(f.cost)}</span>
-    </div>`
-  ).join('') + `
-    <div class="result-divider"></div>
-    <div class="result-row total-row">
-      <span class="result-row-label">직접공사비 소계</span>
-      <span class="result-row-value">${fmt(totalDirect)} 만원</span>
+function renderFloors(){
+  const list=document.getElementById('floorList');list.innerHTML='';
+  floors.forEach((f,idx)=>{
+    const ug=f.ug!=null?f.ug:isUG(f.name);floors[idx].ug=ug;
+    const opts=USE_OPTIONS.map(u=>`<option value="${u.key}"${f.use===u.key?' selected':''}>${u.label}</option>`).join('');
+    const card=document.createElement('div');card.className='floor-card';
+    card.innerHTML=`<div class="fc-head">
+      <input class="fn-input" value="${f.name}" onchange="floors[${idx}].name=this.value;floors[${idx}].ug=isUG(this.value);renderFloors();recalcCost()">
+      ${ug?'<span class="fc-ug">지하</span>':''}
+      <div class="fc-badge" id="badge_${f.id}">— 만원</div>
+      <button class="btn-del" onclick="removeFloor(${idx})">×</button>
+    </div>
+    <div class="fc-body">
+      <div class="s2"><div class="ffl">용도</div><select class="ffi" onchange="floors[${idx}].use=this.value;recalcCost();buildRevenueInputs()">${opts}</select></div>
+      <div><div class="ffl">전용면적 (㎡)</div><input type="number" class="ffi" value="${f.priv}" min="0" step="1" onchange="floors[${idx}].priv=+this.value;recalcCost();buildRevenueInputs()"></div>
+      <div><div class="ffl">공용면적 (㎡)</div><input type="number" class="ffi" value="${f.common}" min="0" step="1" onchange="floors[${idx}].common=+this.value;recalcCost()"></div>
+      <div><div class="ffl">층고 (m)</div><input type="number" class="ffi" value="${f.height}" min="2.0" max="20" step="0.1" onchange="floors[${idx}].height=+this.value;recalcCost()"></div>
+      <div><div class="ffl">단가 직접입력 (만원/㎡)</div><input type="number" class="ffi" value="${f.unitOverride||''}" placeholder="자동" min="0" step="5" onchange="floors[${idx}].unitOverride=this.value===''?'':+this.value;recalcCost()"></div>
     </div>`;
+    list.appendChild(card);
+  });
+}
+function addFloor(){floors.push({id:floorId++,name:`${floors.length+1}층`,use:'retail1',priv:150,common:20,height:2.8,unitOverride:'',ug:false});renderFloors();recalcCost();document.getElementById('floorList').lastElementChild.scrollIntoView({behavior:'smooth',block:'nearest'});}
+function removeFloor(idx){if(floors.length<=1)return;floors.splice(idx,1);renderFloors();recalcCost();}
 
-  // cost breakdown
-  const cb = document.getElementById('costBreakdown');
-  cb.innerHTML = `
-    <div class="result-row sub-row">
-      <span class="result-row-label">직접공사비</span>
-      <span class="result-row-value">${fmt(totalDirect)} 만원</span>
-    </div>
-    ${indirectBreakdown.map(x => `
-    <div class="result-row sub-row">
-      <span class="result-row-label">${x.label} (${x.rate}%)</span>
-      <span class="result-row-value">${fmt(x.amt)} 만원</span>
-    </div>`).join('')}
-    <div class="result-divider"></div>
-    <div class="result-row total-row">
-      <span class="result-row-label">합계 (VAT 전)</span>
-      <span class="result-row-value">${fmt(preVAT)} 만원</span>
-    </div>
-    ${vatMult > 1 ? `
-    <div class="result-row sub-row">
-      <span class="result-row-label">부가세 (10%)</span>
-      <span class="result-row-value">${fmt(Math.round(preVAT*0.1))} 만원</span>
-    </div>
-    <div class="result-row total-row" style="margin-top:4px;">
-      <span class="result-row-label">최종 합계 (VAT 포함)</span>
-      <span class="result-row-value" style="color:#7B9FF5;">${fmt(withVAT)} 만원</span>
-    </div>` : ''}
-  `;
+function hCoeff(h,base){const b=parseFloat(base)||2.8;return Math.min(Math.max((h/b)*0.9+0.1,0.85),1.35);}
 
-  // area summary
-  const as = document.getElementById('areaSummary');
-  const totalGFA = totalPrivate + totalCommon;
-  const perSqm = totalGFA > 0 ? Math.round(totalDirect / totalGFA) : 0;
-  as.innerHTML = `
-    <div class="result-row sub-row">
-      <span class="result-row-label">전용면적 합계</span>
-      <span class="result-row-value">${fmtA(totalPrivate)} ㎡</span>
-    </div>
-    <div class="result-row sub-row">
-      <span class="result-row-label">공용면적 합계</span>
-      <span class="result-row-value">${fmtA(totalCommon)} ㎡</span>
-    </div>
-    <div class="result-divider"></div>
-    <div class="result-row total-row">
-      <span class="result-row-label">연면적 합계</span>
-      <span class="result-row-value">${fmtA(totalGFA)} ㎡</span>
-    </div>
-    <div class="result-row sub-row">
-      <span class="result-row-label">㎡당 평균 공사비</span>
-      <span class="result-row-value">${fmt(perSqm)} 만원</span>
-    </div>
-  `;
+function recalcCost(){
+  const sC=parseFloat(document.getElementById('structType').value)||1;
+  const rC=parseFloat(document.getElementById('region').value)||1;
+  const baseH=parseFloat(document.getElementById('baseHeight').value)||2.8;
+  const vatM=parseFloat(document.getElementById('vatYN').value)||1.1;
+  const ugB=parseFloat(document.getElementById('ugBonus').value)||1.3;
+  const yr=document.getElementById('priceYear').value;
+  const sEl=document.getElementById('structType'),rEl=document.getElementById('region');
+  document.getElementById('dStruct').textContent=sC.toFixed(2);
+  document.getElementById('dRegion').textContent=rC.toFixed(2);
+  document.getElementById('dUG').textContent='×'+ugB.toFixed(2);
+  document.getElementById('dStructL').textContent=sEl.options[sEl.selectedIndex].text;
+  document.getElementById('dRegionL').textContent=rEl.options[rEl.selectedIndex].text;
+  const nY=document.getElementById('noticeYear');if(nY)nY.textContent=yr;
+  let totPriv=0,totCommon=0,totDirect=0;const floorRes=[];
+  floors.forEach((f,i)=>{
+    const ug=f.ug||isUG(f.name);
+    const useObj=USE_OPTIONS.find(u=>u.key===f.use)||USE_OPTIONS[0];
+    const price=f.unitOverride!==''?+f.unitOverride:useObj.price;
+    const cost=Math.round(((f.priv||0)+(f.common||0))*price*hCoeff(f.height,baseH)*sC*rC*(ug?ugB:1));
+    totPriv+=(f.priv||0);totCommon+=(f.common||0);totDirect+=cost;
+    floorRes.push({name:f.name,use:useObj.label,area:(f.priv||0)+(f.common||0),cost,ug});
+    const b=document.getElementById(`badge_${f.id}`);if(b)b.textContent=fmt(cost)+' 만원';
+  });
+  let indTotal=0;const indBreak=[];
+  extraItems.forEach(d=>{const amt=Math.round(totDirect*d.rate/100);indTotal+=amt;indBreak.push({label:d.label,rate:d.rate,amt});});
+  const preVAT=totDirect+indTotal,withVAT=Math.round(preVAT*vatM),totGFA=totPriv+totCommon;
+  const perSqm=totGFA>0?Math.round(totDirect/totGFA):0;
+  document.getElementById('bannerLabel').textContent='총 공사비 (VAT '+(vatM>1?'포함':'별도')+')';
+  document.getElementById('bannerTotal').textContent=toEok(withVAT);
+  document.getElementById('bannerUnit').textContent='억원';
+  document.getElementById('bannerSub').textContent=fmt(withVAT)+' 만원';
+  document.getElementById('bChip1Label').textContent='연면적 ';document.getElementById('bChip1').textContent=fmt(totGFA)+' ㎡';
+  document.getElementById('bChip2Label').textContent='㎡당 ';document.getElementById('bChip2').textContent=fmt(perSqm)+' 만원';
+  const rdF=document.getElementById('rdFloor');
+  if(rdF)rdF.innerHTML=floorRes.map(r=>`<div class="rr ind"><span class="rr-l">${r.name} <span style="font-size:10px;opacity:.6">${r.use}${r.ug?' [지하]':''}</span></span><span class="rr-v">${fmt(r.cost)} 만</span></div>`).join('')+`<div class="r-div"></div><div class="rr strong"><span class="rr-l">직접공사비 소계</span><span class="rr-v">${fmt(totDirect)} 만원</span></div>`;
+  const rdB=document.getElementById('rdBreakdown');
+  if(rdB)rdB.innerHTML=`<div class="rr"><span class="rr-l">직접공사비</span><span class="rr-v">${fmt(totDirect)} 만원</span></div>`+indBreak.map(x=>`<div class="rr ind"><span class="rr-l">${x.label} (${x.rate}%)</span><span class="rr-v">${fmt(x.amt)} 만</span></div>`).join('')+`<div class="r-div"></div><div class="rr"><span class="rr-l">소계 (VAT 전)</span><span class="rr-v">${fmt(preVAT)} 만원</span></div>`+(vatM>1?`<div class="rr ind"><span class="rr-l">부가세</span><span class="rr-v">${fmt(Math.round(preVAT*.1))} 만</span></div><div class="rr strong"><span class="rr-l">합계 (VAT 포함)</span><span class="rr-v">${fmt(withVAT)} 만원</span></div>`:'');
+  const rdA=document.getElementById('rdArea');
+  if(rdA)rdA.innerHTML=`<div class="rr ind"><span class="rr-l">전용면적 합계</span><span class="rr-v">${fmt(totPriv)} ㎡</span></div><div class="rr ind"><span class="rr-l">공용면적 합계</span><span class="rr-v">${fmt(totCommon)} ㎡</span></div><div class="r-div"></div><div class="rr strong"><span class="rr-l">연면적 합계</span><span class="rr-v">${fmt(totGFA)} ㎡</span></div><div class="rr ind"><span class="rr-l">㎡당 평균 공사비</span><span class="rr-v">${fmt(perSqm)} 만원</span></div>`;
+  autoSave();recalcFS();
 }
 
-// ── FORMAT ──
-function fmt(n) {
-  return n.toLocaleString('ko-KR');
+function getConstEok(){
+  const sC=parseFloat(document.getElementById('structType').value)||1;
+  const rC=parseFloat(document.getElementById('region').value)||1;
+  const baseH=parseFloat(document.getElementById('baseHeight').value)||2.8;
+  const ugB=parseFloat(document.getElementById('ugBonus').value)||1.3;
+  let tot=0;
+  floors.forEach(f=>{const ug=f.ug||isUG(f.name);const u=USE_OPTIONS.find(x=>x.key===f.use)||USE_OPTIONS[0];const p=f.unitOverride!==''?+f.unitOverride:u.price;tot+=Math.round(((f.priv||0)+(f.common||0))*p*hCoeff(f.height,baseH)*sC*rC*(ug?ugB:1));});
+  let ind=0;extraItems.forEach(d=>{ind+=Math.round(tot*d.rate/100);});
+  return (tot+ind)/10000;
 }
-function fmtA(n) {
-  return n.toLocaleString('ko-KR');
-}
-function toEok(manwon) {
-  const eok = manwon / 10000;
-  return eok.toFixed(2);
-}
-
-// ── TABS ──
-function switchTab(id) {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-  document.getElementById('tab-' + id).classList.add('active');
-  event.target.classList.add('active');
+function getLandEok(){
+  const m=document.getElementById('landMode').value;
+  if(m==='direct')return parseFloat(document.getElementById('landPrice').value)||0;
+  return ((parseFloat(document.getElementById('landArea').value)||0)*(parseFloat(document.getElementById('landUnit').value)||0))/10000;
 }
 
-// ── SAVE / LOAD ──
-function saveData() {
-  const data = {
-    bldName: document.getElementById('bldName').value,
-    structType: document.getElementById('structType').value,
-    region: document.getElementById('region').value,
-    baseHeight: document.getElementById('baseHeight').value,
-    vatYN: document.getElementById('vatYN').value,
-    priceYear: document.getElementById('priceYear').value,
-    floors: floors.map(f => ({...f})),
-    unitPrices: JSON.parse(JSON.stringify(UNIT_PRICES)),
-    extraRates: {...extraRates},
-  };
-  localStorage.setItem('costchecker_v1', JSON.stringify(data));
-
-  // 파일 다운로드
-  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `공사비검토_${data.bldName||'unnamed'}_${new Date().toISOString().slice(0,10)}.json`;
-  a.click();
+function buildUnitRefTable(){
+  const b=document.getElementById('unitRefBody');b.innerHTML='';
+  USE_OPTIONS.forEach(u=>{const d=UNIT_PRICES[u.key];const tr=document.createElement('tr');tr.innerHTML=`<td>${u.label}</td><td><input type="number" value="${d.min}" min="50" max="2000" step="5" onchange="UNIT_PRICES['${u.key}'].min=+this.value;recalcCost()"></td><td><input type="number" value="${d.avg}" min="50" max="2000" step="5" onchange="UNIT_PRICES['${u.key}'].avg=+this.value;USE_OPTIONS.find(x=>x.key==='${u.key}').price=+this.value;recalcCost()"></td><td><input type="number" value="${d.max}" min="50" max="2000" step="5" onchange="UNIT_PRICES['${u.key}'].max=+this.value;recalcCost()"></td>`;b.appendChild(tr);});
 }
 
-function loadData() {
-  const input = document.createElement('input');
-  input.type = 'file';
-  input.accept = '.json';
-  input.onchange = e => {
-    const f = e.target.files[0];
-    if (!f) return;
-    const reader = new FileReader();
-    reader.onload = ev => {
-      try {
-        const d = JSON.parse(ev.target.result);
-        applyData(d);
-      } catch(err) {
-        alert('파일 형식 오류: JSON 파일만 가능합니다.');
-      }
-    };
-    reader.readAsText(f);
-  };
-  input.click();
+function renderExtraGrid(){
+  const g=document.getElementById('extraGrid');g.innerHTML='';
+  extraItems.forEach((d,i)=>{const div=document.createElement('div');div.className='extra-item';div.innerHTML=`<input class="fi" style="height:36px;font-size:13px;flex:1;min-width:0" value="${d.label}" onchange="extraItems[${i}].label=this.value;recalcCost()"><input type="number" class="ex-inp" value="${d.rate}" min="0" max="50" step="0.5" onchange="extraItems[${i}].rate=+this.value;recalcCost()"><span class="ex-sfx">%</span><button class="btn-del" onclick="removeExtra(${i})">×</button>`;g.appendChild(div);});
+}
+function addExtraItem(){extraItems.push({id:extraId++,label:'항목명',rate:1.0});renderExtraGrid();recalcCost();}
+function removeExtra(i){extraItems.splice(i,1);renderExtraGrid();recalcCost();}
+
+function renderSideGrid(){
+  const g=document.getElementById('sideGrid');if(!g)return;g.innerHTML='';
+  sideItems.forEach((d,i)=>{const div=document.createElement('div');div.className='extra-item';const tipH=d.tip?`<span class="tip-wrap"><button class="tip-btn">?</button><div class="tip-box">${d.tip}</div></span>`:'';div.innerHTML=`<span class="ex-label">${d.label}${tipH}</span><input type="number" class="ex-inp" value="${d.rate}" min="0" max="50" step="0.1" onchange="sideItems[${i}].rate=+this.value;recalcFS()"><span class="ex-sfx">%</span><button class="btn-del" onclick="removeSide(${i})">×</button>`;g.appendChild(div);});
+}
+function addSideItem(){sideItems.push({id:sideId++,label:'부대비용',rate:1.0,tip:''});renderSideGrid();recalcFS();}
+function removeSide(i){sideItems.splice(i,1);renderSideGrid();recalcFS();}
+
+function buildRevenueInputs(){
+  const active=new Set();
+  floors.forEach(f=>{const u=USE_OPTIONS.find(x=>x.key===f.use);if(u&&u.sk)active.add(u.sk);});
+  const c=document.getElementById('revenueInputs');if(!c)return;c.innerHTML='';
+  const dt=document.getElementById('devType').value;
+  REV_GROUPS.filter(g=>active.has(g.key)).forEach(g=>{
+    const d=revData[g.key]||{saleUnit:500,rentUnit:5,vacancy:5};
+    const area=floors.filter(f=>{const u=USE_OPTIONS.find(x=>x.key===f.use);return u&&u.sk===g.key;}).reduce((s,f)=>s+(f.priv||0),0);
+    const div=document.createElement('div');div.className='rev-card';
+    div.innerHTML=`<div class="sec-label" style="margin-bottom:10px">${g.label} <span style="font-size:11px;font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0">(전용 ${fmt(area)} ㎡)</span></div><div class="fg">
+      ${dt!=='rent'?`<div class="field"><label class="fl">분양가 (만원/㎡)</label><input type="number" class="fi" value="${d.saleUnit}" min="0" step="10" onchange="revData['${g.key}'].saleUnit=+this.value;recalcFS()"></div>`:''}
+      ${dt!=='sale'?`<div class="field"><label class="fl">임대료 (만원/㎡/월)</label><input type="number" class="fi" value="${d.rentUnit}" min="0" step="0.5" onchange="revData['${g.key}'].rentUnit=+this.value;recalcFS()"></div>
+      <div class="field"><label class="fl">공실률 (%)</label><input type="number" class="fi" value="${d.vacancy}" min="0" max="100" step="1" onchange="revData['${g.key}'].vacancy=+this.value;recalcFS()"></div>`:''}
+    </div>`;
+    c.appendChild(div);
+  });
 }
 
-function applyData(d) {
-  if (d.bldName !== undefined) document.getElementById('bldName').value = d.bldName;
-  if (d.structType) document.getElementById('structType').value = d.structType;
-  if (d.region) document.getElementById('region').value = d.region;
-  if (d.baseHeight) document.getElementById('baseHeight').value = d.baseHeight;
-  if (d.vatYN) document.getElementById('vatYN').value = d.vatYN;
-  if (d.priceYear) document.getElementById('priceYear').value = d.priceYear;
-  if (d.floors) { floors = d.floors; floorId = Math.max(...floors.map(f=>f.id)) + 1; }
-  if (d.unitPrices) Object.assign(UNIT_PRICES, d.unitPrices);
-  if (d.extraRates) Object.assign(extraRates, d.extraRates);
-  buildUnitRefTable();
-  buildExtraGrid();
-  renderFloors();
-  recalc();
+function recalcFS(){
+  const constEok=getConstEok();
+  const vatM=parseFloat(document.getElementById('vatYN').value)||1.1;
+  const constVAT=constEok*vatM;
+  const landEok=getLandEok();
+  const permitM=parseInt(document.getElementById('permitM').value)||12;
+  const constM=parseInt(document.getElementById('constM').value)||18;
+  const saleM=parseInt(document.getElementById('saleM').value)||6;
+  const ltvR=parseFloat(document.getElementById('ltvRate').value)||60;
+  const pfR=parseFloat(document.getElementById('pfRate').value)||6;
+  const discR=parseFloat(document.getElementById('discRate').value)||10;
+  const pat=document.getElementById('constPattern').value;
+  const dt=document.getElementById('devType').value;
+
+  // side costs: base = constVAT for design/super, land for acq
+  let sideTotal=0;const sideBreak=[];
+  sideItems.forEach(d=>{
+    let base=constVAT;
+    if(d.label.includes('취득'))base=landEok;
+    else if(d.label.includes('마케팅'))base=0; // 분양수입 연동 복잡하므로 일단 공사비 기준
+    const amt=base*d.rate/100;sideTotal+=amt;sideBreak.push({label:d.label,amt});
+  });
+
+  const totCostEok=landEok+constVAT+sideTotal;
+  const loanEok=totCostEok*ltvR/100;
+  const interestEok=loanEok*pfR/100*(constM/12);
+
+  // revenue
+  const areaByGrp={};REV_GROUPS.forEach(g=>{areaByGrp[g.key]=0;});
+  floors.forEach(f=>{const u=USE_OPTIONS.find(x=>x.key===f.use);if(u&&u.sk)areaByGrp[u.sk]+=(f.priv||0);});
+  let totRevEok=0;const revBreak=[];
+  REV_GROUPS.forEach(g=>{
+    const area=areaByGrp[g.key];if(!area)return;
+    const d=revData[g.key]||{saleUnit:0,rentUnit:0,vacancy:5};
+    if(dt==='sale'||dt==='mixed'){const e=(area*d.saleUnit)/10000;totRevEok+=e;revBreak.push({label:`${g.label} 분양수입`,amt:e});}
+    if(dt==='rent'||dt==='mixed'){const e=(area*d.rentUnit*12*(1-d.vacancy/100))/10000*10;totRevEok+=e;revBreak.push({label:`${g.label} 임대수익(10년)`,amt:e});}
+  });
+
+  const profitEok=totRevEok-(totCostEok+interestEok);
+  const profitRate=(totCostEok+interestEok)>0?profitEok/(totCostEok+interestEok)*100:0;
+
+  // CF build
+  const totalM=permitM+constM+saleM;
+  const totalQ=Math.max(Math.ceil(totalM/3),4);
+  const cfs=new Array(totalQ).fill(0);
+  cfs[0]-=landEok;
+  const pQ=Math.max(Math.ceil(permitM/3),1);
+  for(let q=0;q<pQ&&q<totalQ;q++)cfs[q]-=sideTotal/pQ;
+  const csQ=Math.ceil(constM/3);
+  const cStart=Math.ceil(permitM/3);
+  const wts=pat==='even'?[.25,.25,.25,.25]:pat==='front'?[.30,.30,.25,.15]:[.10,.20,.35,.35];
+  for(let i=0;i<Math.min(csQ,4);i++){const qi=cStart+i;if(qi<totalQ)cfs[qi]-=constVAT*wts[i];}
+  for(let i=0;i<Math.min(csQ,4);i++){const qi=cStart+i;if(qi<totalQ)cfs[qi]-=interestEok/Math.min(csQ,4);}
+  const sStart=cStart+csQ;
+  const saleQs=Math.max(Math.ceil(saleM/3),1);
+  if(dt==='sale'||dt==='mixed'){for(let i=0;i<saleQs;i++){const qi=sStart+i;if(qi<totalQ)cfs[qi]+=totRevEok/saleQs;}}
+  if(dt==='rent'||dt==='mixed'){const annRent=revBreak.filter(r=>r.label.includes('임대')).reduce((s,r)=>s+r.amt/10,0);for(let q=sStart;q<totalQ;q++)cfs[q]+=annRent/4;}
+  _cfData=cfs;
+
+  // NPV
+  const qd=discR/100/4;
+  const npv=cfs.reduce((s,c,i)=>s+c/Math.pow(1+qd,i+1),0);
+  // IRR
+  let irr=NaN;try{irr=calcIRR(cfs)*4*100;}catch(e){}
+
+  // cumulative
+  let cum=0;const cumCF=cfs.map(c=>{cum+=c;return+cum.toFixed(2);});
+
+  // banner color
+  const banner=document.getElementById('bannerEl');
+  if(document.getElementById('top-fs').style.display!=='none'){
+    document.getElementById('bannerLabel').textContent='개발이익';
+    document.getElementById('bannerTotal').textContent=Math.abs(profitEok).toFixed(2);
+    document.getElementById('bannerUnit').textContent=profitEok>=0?'억원 (흑자)':'억원 (적자)';
+    document.getElementById('bannerSub').textContent='수익률 '+profitRate.toFixed(1)+'%';
+    document.getElementById('bChip1Label').textContent='NPV ';document.getElementById('bChip1').textContent=npv.toFixed(1)+' 억';
+    document.getElementById('bChip2Label').textContent='IRR ';document.getElementById('bChip2').textContent=isNaN(irr)?'—':irr.toFixed(1)+'%';
+    if(banner){banner.classList.remove('profit','loss');banner.classList.add(profitEok>=0?'profit':'loss');}
+  } else {
+    if(banner){banner.classList.remove('profit','loss');}
+  }
+
+  // 손익분기 분양가 산출
+  const areaByGrpForBEP={};REV_GROUPS.forEach(g=>{areaByGrpForBEP[g.key]=0;});
+  floors.forEach(f=>{const u=USE_OPTIONS.find(x=>x.key===f.use);if(u&&u.sk)areaByGrpForBEP[u.sk]+=(f.priv||0);});
+  const totalSaleArea=REV_GROUPS.reduce((s,g)=>s+areaByGrpForBEP[g.key],0);
+  const totalCostForBEP=totCostEok+interestEok; // 억원
+  const bepUnit=totalSaleArea>0?Math.ceil((totalCostForBEP*10000)/totalSaleArea/10)*10:0; // 만원/㎡, 10단위 올림
+  const bepEl=document.getElementById('bepVal');
+  const bepCard=document.getElementById('bepCard');
+  if(bepEl){bepEl.textContent=bepUnit>0?fmt(bepUnit)+' 만원/㎡':'면적 없음';}
+  if(bepCard){
+    bepCard.style.borderColor=profitEok>=0?'var(--green)':'var(--warn)';
+    bepCard.style.background=profitEok>=0?'var(--green-light)':'var(--warn-light)';
+    const tag=bepCard.querySelector('.bep-tag');
+    if(tag){tag.style.color=profitEok>=0?'var(--green)':'var(--warn)';}
+    const val=bepCard.querySelector('.bep-val');
+    if(val){val.style.color=profitEok>=0?'var(--green)':'var(--warn)';}
+    const inp=document.getElementById('bepAdj');
+    if(inp){inp.style.borderColor=profitEok>=0?'var(--green)':'var(--warn)';inp.style.background=profitEok>=0?'var(--green-light)':'var(--warn-light)';inp.style.color=profitEok>=0?'var(--green)':'var(--warn)';}
+    const desc=document.getElementById('bepDesc');
+    if(desc){
+      const gap=profitEok>=0
+        ? `현재 분양가가 손익분기(${fmt(bepUnit)}만원/㎡)보다 높습니다.`
+        : `현재 분양가가 손익분기(${fmt(bepUnit)}만원/㎡)에 미달합니다.`;
+      desc.textContent=gap;
+    }
+  }
+
+  // KPI
+  const kg=document.getElementById('kpiGrid');
+  if(kg)kg.innerHTML=`
+    <div class="kpi-card ${profitEok>=0?'gn':'rd'}"><div class="kpi-label">개발이익</div><div class="kpi-val">${Math.abs(profitEok).toFixed(1)}<span class="kpi-unit">억</span></div><div class="kpi-sub">${profitEok>=0?'흑자':'적자'} · 수익률 ${profitRate.toFixed(1)}%</div></div>
+    <div class="kpi-card acc"><div class="kpi-label">IRR (연환산)</div><div class="kpi-val">${isNaN(irr)?'—':irr.toFixed(1)}<span class="kpi-unit">%</span></div><div class="kpi-sub">요구수익률 ${discR}%</div></div>
+    <div class="kpi-card"><div class="kpi-label">NPV</div><div class="kpi-val">${npv.toFixed(1)}<span class="kpi-unit">억</span></div><div class="kpi-sub">${npv>=0?'타당':'재검토'}</div></div>
+    <div class="kpi-card"><div class="kpi-label">총사업비</div><div class="kpi-val">${(totCostEok+interestEok).toFixed(1)}<span class="kpi-unit">억</span></div><div class="kpi-sub">PF ${loanEok.toFixed(1)}억 (${ltvR}%)</div></div>`;
+
+  const fb=document.getElementById('fsBreakdown');
+  if(fb)fb.innerHTML=`<div class="rr"><span class="rr-l">토지비</span><span class="rr-v">${landEok.toFixed(2)} 억</span></div><div class="rr"><span class="rr-l">공사비 (VAT 포함)</span><span class="rr-v">${constVAT.toFixed(2)} 억</span></div>`+sideBreak.map(x=>`<div class="rr ind"><span class="rr-l">${x.label}</span><span class="rr-v">${x.amt.toFixed(2)} 억</span></div>`).join('')+`<div class="rr ind"><span class="rr-l">PF 이자 (공사기간)</span><span class="rr-v">${interestEok.toFixed(2)} 억</span></div><div class="r-div"></div><div class="rr strong"><span class="rr-l">총사업비</span><span class="rr-v">${(totCostEok+interestEok).toFixed(2)} 억</span></div>`;
+
+  const fr=document.getElementById('fsRevenue');
+  if(fr)fr.innerHTML=revBreak.map(r=>`<div class="rr"><span class="rr-l">${r.label}</span><span class="rr-v">${r.amt.toFixed(2)} 억</span></div>`).join('')+`<div class="r-div"></div><div class="rr strong ${profitEok>=0?'gn':'rd'}"><span class="rr-l">개발이익</span><span class="rr-v">${profitEok.toFixed(2)} 억</span></div>`;
+
+  // CF table
+  const ct=document.getElementById('cfTable');
+  if(ct)ct.innerHTML=`<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px"><tr style="background:var(--surface2)"><th style="padding:6px 10px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)">분기</th><th style="padding:6px 10px;text-align:right;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)">현금흐름(억)</th><th style="padding:6px 10px;text-align:right;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)">누적(억)</th></tr>`+cfs.map((c,i)=>`<tr style="border-bottom:1px solid var(--surface2)"><td style="padding:5px 10px;color:var(--text2)">Q${i+1}</td><td style="padding:5px 10px;text-align:right;font-family:var(--mono);color:${c>=0?'var(--green)':'var(--warn)'}">${c>=0?'+':''}${c.toFixed(2)}</td><td style="padding:5px 10px;text-align:right;font-family:var(--mono);color:${cumCF[i]>=0?'var(--green)':'var(--warn)'}">${cumCF[i]>=0?'+':''}${cumCF[i]}</td></tr>`).join('')+`</table></div>`;
+
+  drawChart(cfs,cumCF);
+  autoSave();
 }
 
-// ── PRINT ──
-function printReport() {
-  window.print();
+function calcIRR(cfs,g=0.05){let r=g;for(let i=0;i<100;i++){let f=0,df=0;cfs.forEach((c,j)=>{f+=c/Math.pow(1+r,j+1);df-=(j+1)*c/Math.pow(1+r,j+2);});if(Math.abs(df)<1e-10)throw 0;const nr=r-f/df;if(Math.abs(nr-r)<1e-8)return nr;r=nr;}return r;}
+
+function drawChart(cfs,cumCF){
+  const canvas=document.getElementById('cfChart');if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  const W=canvas.offsetWidth||320,H=200;canvas.width=W;canvas.height=H;ctx.clearRect(0,0,W,H);
+  const pad={t:16,r:16,b:28,l:52};const cw=W-pad.l-pad.r,ch=H-pad.t-pad.b;
+  const all=[...cfs,...cumCF,0];const maxV=Math.max(...all),minV=Math.min(...all),rng=maxV-minV||1;
+  function vy(v){return pad.t+ch-(v-minV)/rng*ch;}
+  function vx(i){return pad.l+(cfs.length>1?i/(cfs.length-1):0.5)*cw;}
+  ctx.strokeStyle='#E8E5DF';ctx.lineWidth=1;
+  for(let i=0;i<=4;i++){const yy=pad.t+i*ch/4;ctx.beginPath();ctx.moveTo(pad.l,yy);ctx.lineTo(pad.l+cw,yy);ctx.stroke();const v=maxV-(maxV-minV)*i/4;ctx.fillStyle='#9E9A94';ctx.font='9px DM Mono,monospace';ctx.textAlign='right';ctx.fillText(v.toFixed(1),pad.l-4,yy+3);}
+  if(minV<0&&maxV>0){ctx.strokeStyle='#B8B3A8';ctx.lineWidth=1.5;ctx.setLineDash([4,3]);ctx.beginPath();ctx.moveTo(pad.l,vy(0));ctx.lineTo(pad.l+cw,vy(0));ctx.stroke();ctx.setLineDash([]);}
+  const bw=Math.max(cw/cfs.length*0.45,4);
+  cfs.forEach((c,i)=>{const bx=vx(i)-bw/2,by=c>=0?vy(c):vy(0),bh=Math.abs(vy(0)-vy(c));ctx.fillStyle=c>=0?'rgba(26,122,74,.3)':'rgba(201,79,26,.3)';ctx.fillRect(bx,by,bw,bh);});
+  ctx.strokeStyle='#2B5BE0';ctx.lineWidth=2;ctx.setLineDash([]);ctx.beginPath();
+  cumCF.forEach((v,i)=>{if(i===0)ctx.moveTo(vx(i),vy(v));else ctx.lineTo(vx(i),vy(v));});ctx.stroke();
+  cumCF.forEach((v,i)=>{ctx.beginPath();ctx.arc(vx(i),vy(v),3,0,Math.PI*2);ctx.fillStyle='#2B5BE0';ctx.fill();});
+  ctx.fillStyle='#9E9A94';ctx.font='9px DM Mono,monospace';ctx.textAlign='center';
+  cfs.forEach((_,i)=>ctx.fillText('Q'+(i+1),vx(i),H-6));
 }
 
-// auto-restore from localStorage
-const saved = localStorage.getItem('costchecker_v1');
-if (saved) {
-  try { applyData(JSON.parse(saved)); } catch(e) {}
+function applyBepAdj(val){
+  // 입력한 분양가를 모든 분양 가능 용도에 일괄 반영
+  const v=parseFloat(val);if(!v||v<=0)return;
+  REV_GROUPS.forEach(g=>{
+    const hasArea=floors.some(f=>{const u=USE_OPTIONS.find(x=>x.key===f.use);return u&&u.sk===g.key;});
+    if(hasArea)revData[g.key].saleUnit=v;
+  });
+  buildRevenueInputs();recalcFS();
 }
+function toggleBlock(h){h.classList.toggle('open');h.nextElementSibling.classList.toggle('open');}
+function switchTop(id,btn){
+  ['cost','fs'].forEach(t=>document.getElementById('top-'+t).style.display=t===id?'':'none');
+  document.querySelectorAll('.top-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+  const banner=document.getElementById('bannerEl');
+  if(id==='fs'){recalcFS();}
+  else{
+    if(banner)banner.classList.remove('profit','loss');
+    recalcCost();
+  }
+}
+function switchSub(id,btn){['ci','cr','cs'].forEach(t=>document.getElementById('sub-'+t).style.display=t===id?'':'none');document.querySelectorAll('#top-cost .sub-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+function switchFSub(id,btn){['fi','fcf','fr'].forEach(t=>document.getElementById('sub-'+t).style.display=t===id?'':'none');document.querySelectorAll('#top-fs .sub-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');if(id==='fcf')setTimeout(()=>{drawChart(_cfData,[]);},50);}
+function toggleLandMode(){const m=document.getElementById('landMode').value;document.getElementById('landDirectF').style.display=m==='direct'?'':'none';document.getElementById('landAreaF').style.display=m==='area'?'':'none';document.getElementById('landUnitF').style.display=m==='area'?'':'none';}
+function fmt(n){return Math.round(n).toLocaleString('ko-KR');}
+function toEok(m){return (m/10000).toFixed(2);}
+function autoSave(){try{localStorage.setItem('cck_v4',JSON.stringify(buildSD()));}catch(e){}}
+function buildSD(){return{bldName:document.getElementById('bldName').value,structType:document.getElementById('structType').value,region:document.getElementById('region').value,baseHeight:document.getElementById('baseHeight').value,ugBonus:document.getElementById('ugBonus').value,vatYN:document.getElementById('vatYN').value,priceYear:document.getElementById('priceYear').value,devType:document.getElementById('devType').value,permitM:document.getElementById('permitM').value,constM:document.getElementById('constM').value,saleM:document.getElementById('saleM').value,landMode:document.getElementById('landMode').value,landPrice:document.getElementById('landPrice').value,landArea:document.getElementById('landArea').value,landUnit:document.getElementById('landUnit').value,ltvRate:document.getElementById('ltvRate').value,pfRate:document.getElementById('pfRate').value,discRate:document.getElementById('discRate').value,constPattern:document.getElementById('constPattern').value,floors:floors.map(f=>({...f})),extraItems:extraItems.map(e=>({...e})),sideItems:sideItems.map(s=>({...s})),unitPrices:JSON.parse(JSON.stringify(UNIT_PRICES)),revData:JSON.parse(JSON.stringify(revData))};}
+function saveData(){const d=buildSD();const b=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`공사비검토_${d.bldName||'unnamed'}_${new Date().toISOString().slice(0,10)}.json`;a.click();}
+function loadData(){const i=document.createElement('input');i.type='file';i.accept='.json';i.onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{try{applyData(JSON.parse(ev.target.result));}catch(err){alert('파일 형식 오류');}};r.readAsText(f);};i.click();}
+function applyData(d){
+  const sv=(id,v)=>{const el=document.getElementById(id);if(el&&v!=null)el.value=v;};
+  sv('bldName',d.bldName);sv('structType',d.structType);sv('region',d.region);sv('baseHeight',d.baseHeight);sv('ugBonus',d.ugBonus);sv('vatYN',d.vatYN);sv('priceYear',d.priceYear);sv('devType',d.devType);sv('permitM',d.permitM);sv('constM',d.constM);sv('saleM',d.saleM);sv('landMode',d.landMode);sv('landPrice',d.landPrice);sv('landArea',d.landArea);sv('landUnit',d.landUnit);sv('ltvRate',d.ltvRate);sv('pfRate',d.pfRate);sv('discRate',d.discRate);sv('constPattern',d.constPattern);
+  if(d.floors){floors=d.floors;floorId=Math.max(...floors.map(f=>f.id))+1;}
+  if(d.extraItems){extraItems=d.extraItems;extraId=Math.max(...extraItems.map(e=>e.id))+1;}
+  if(d.sideItems){sideItems=d.sideItems;sideId=Math.max(...sideItems.map(s=>s.id))+1;}
+  if(d.unitPrices)Object.assign(UNIT_PRICES,d.unitPrices);
+  if(d.revData)Object.assign(revData,d.revData);
+  toggleLandMode();buildUnitRefTable();renderExtraGrid();renderSideGrid();renderFloors();buildRevenueInputs();recalcCost();
+}
+window.addEventListener('resize',()=>{if(_cfData.length)drawChart(_cfData,[]);});
 </script>
 </body>
 </html>
