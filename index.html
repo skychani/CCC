@@ -967,6 +967,7 @@ function recalcFS(){
     const irrJudge=isNaN(irr)?'':irr>discR?`요구수익률(${discR}%)을 <b style="color:var(--green)">초과</b>하여 투자 타당성이 있습니다.`:`요구수익률(${discR}%)에 <b style="color:var(--warn)">미달</b>하여 조건 개선이 필요합니다.`;
     const npvJudge=npv>=0?`<b style="color:var(--green)">양(+)</b>으로 요구수익률 이상의 가치를 창출합니다.`:`<b style="color:var(--warn)">음(-)</b>으로 현재 조건에서는 요구수익률을 충족하지 못합니다.`;
     const beStr=breakEvenQ?`Q${breakEvenQ} (사업 착수 후 약 ${breakEvenQ*3}개월)`:'분석 기간 내 미전환';
+    const patLabel=pat==='front'?'전반에 집중':pat==='back'?'후반에 집중':'균등하게';
     cfN.innerHTML=`
       <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)">현금흐름 해설</div>
       <p style="margin-bottom:8px">
@@ -975,19 +976,19 @@ function recalcFS(){
       </p>
       <p style="margin-bottom:8px">
         사업 초기 토지비·부대비용 지출로 현금이 유출되고, 공사 기간 중 공사비(${constVAT.toFixed(1)}억원, VAT 포함)가
-        ${pat==='front'?'전반에 집중':`pat==='back'?'후반에 집중':'균등하게'}`} 집행됩니다.
+        <b>${patLabel}</b> 집행됩니다.
         자금 최저점은 <b>Q${minQ}</b>로, 누적 순지출이 최대 <b style="color:var(--warn)">${Math.abs(minCum).toFixed(1)}억원</b>에 달합니다.
         이 시점이 PF 대출 한도(${loanEok.toFixed(1)}억원)로 충당 가능한지 확인이 필요합니다.
       </p>
       <p style="margin-bottom:8px">
         누적 현금흐름 흑자 전환 시점은 <b>${beStr}</b>입니다.
-        ${breakEvenQ?`전환 이후부터 실질적인 수익 회수가 시작됩니다.`:'분양가 또는 사업 조건 재검토가 필요합니다.'}
+        ${breakEvenQ?'전환 이후부터 실질적인 수익 회수가 시작됩니다.':'분양가 또는 사업 조건 재검토가 필요합니다.'}
       </p>
       <p style="margin-bottom:0">
         IRR은 <b>${irrStr}</b>이며, ${irrJudge}
         NPV는 <b>${npv.toFixed(1)}억원</b>으로 ${npvJudge}
-        ${!isNaN(irr)&&irr>discR&&npv>0?`현재 입력 조건에서 사업성이 <b style="color:var(--green)">확보</b>된 것으로 판단됩니다.`:
-          !isNaN(irr)&&irr<discR?`분양가 상향, 토지비 절감, 또는 공사비 조정을 통해 수익성 개선을 검토하십시오.`:''}
+        ${!isNaN(irr)&&irr>discR&&npv>0?'현재 입력 조건에서 사업성이 <b style="color:var(--green)">확보</b>된 것으로 판단됩니다.':
+          !isNaN(irr)&&irr<discR?'분양가 상향, 토지비 절감, 또는 공사비 조정을 통해 수익성 개선을 검토하십시오.':''}
       </p>`;
   }
 
