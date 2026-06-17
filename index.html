@@ -58,6 +58,12 @@ header{background:var(--dark);color:#fff;padding:0 16px;height:52px;display:flex
 .fl{font-size:11px;font-weight:500;color:var(--text2);display:flex;align-items:center;gap:4px}
 .fi{font-family:var(--sans);font-size:15px;padding:0 12px;height:var(--touch);border:1.5px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);width:100%;-webkit-appearance:none;transition:border-color .15s}
 .fi:focus{outline:none;border-color:var(--accent-mid)}
+.fi.err{border-color:var(--warn)!important;background:var(--warn-light)!important}
+.ffi.err{border-color:var(--warn)!important;background:var(--warn-light)!important}
+.err-msg{font-size:10px;color:var(--warn);margin-top:3px;display:none}
+.err-msg.show{display:block}
+.val-banner{background:var(--warn);color:#fff;font-size:12px;font-weight:500;padding:8px 16px;border-radius:8px;margin-bottom:14px;display:none;align-items:center;gap:8px}
+.val-banner.show{display:flex}
 input[type=number].fi{font-family:var(--mono)}
 select.fi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%239E9A94' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;cursor:pointer}
 .tip-wrap{position:relative;display:inline-flex}
@@ -241,6 +247,7 @@ select.ffi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.
   <div class="top-tabs">
     <button class="top-tab active" onclick="switchTop('cost',this)">공사비 산출</button>
     <button class="top-tab" onclick="switchTop('fs',this)">사업성 검토</button>
+    <button class="top-tab" onclick="switchTop('compare',this)">안 비교</button>
   </div>
 
   <!-- COST -->
@@ -251,6 +258,7 @@ select.ffi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.
       <button class="sub-tab" onclick="switchSub('cs',this)">단가·간접비</button>
     </div>
     <div id="sub-ci">
+      <div class="val-banner" id="valBanner">⚠ <span id="valMsg">입력값을 확인하세요.</span></div>
       <div class="section">
         <div class="sec-head"><div class="sec-label">건물 기본정보</div></div>
         <div class="fg c1" style="margin-bottom:10px">
@@ -292,6 +300,40 @@ select.ffi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.
     </div>
     <div id="sub-cs" style="display:none">
       <div class="section">
+        <div class="sec-head"><div class="sec-label">단가 시점 보정 <span class="tip-wrap"><button class="tip-btn">?</button><div class="tip-box">기준 단가가 과거 시점 데이터인 경우 물가 상승률을 반영해 보정합니다.<br>건설공사비지수(KICT) 기준 최근 3년 평균 상승률: 약 5~8%/년<br>예) 2022년 단가 기준 → 2025년 적용 시 +15~20% 가산<br><a href="https://www.kict.re.kr" target="_blank">KICT 건설공사비지수 →</a></div></span></div></div>
+        <div class="fg">
+          <div class="field">
+            <label class="fl">기준 단가 연도</label>
+            <select class="fi" id="baseYear" onchange="recalcPriceAdj()">
+              <option value="2025">2025년 (현재)</option>
+              <option value="2024">2024년</option>
+              <option value="2023">2023년</option>
+              <option value="2022">2022년</option>
+              <option value="2021">2021년</option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="fl">적용 연도</label>
+            <select class="fi" id="applyYear" onchange="recalcPriceAdj()">
+              <option value="2025">2025년</option>
+              <option value="2026">2026년</option>
+              <option value="2027">2027년</option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="fl">연간 물가 상승률 (%)</label>
+            <input type="number" class="fi" id="inflRate" value="5.0" min="0" max="30" step="0.5" oninput="recalcPriceAdj()">
+          </div>
+          <div class="field">
+            <label class="fl">산출된 보정계수</label>
+            <div style="height:var(--touch);display:flex;align-items:center;padding:0 12px;background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;font-family:var(--mono);font-size:15px;font-weight:500;color:var(--accent)" id="priceAdjDisplay">×1.000</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">
+          <div style="font-size:11px;color:var(--muted)" id="priceAdjDesc">기준연도와 적용연도가 같아 보정 없음</div>
+          <button onclick="applyPriceAdj()" style="font-family:var(--sans);font-size:12px;font-weight:600;padding:6px 14px;border-radius:7px;border:none;background:var(--accent);color:#fff;cursor:pointer">모든 단가에 적용 →</button>
+        </div>
+      </div>
         <div class="sec-head"><div class="sec-label">용도별 ㎡당 기준단가 (만원/㎡) <span class="tip-wrap"><button class="tip-btn">?</button><div class="tip-box">RC조·서울 기준 / 2025년 추정. 평균값이 자동 적용됩니다.<br><a href="https://www.kict.re.kr" target="_blank">KICT →</a> <a href="https://stat.molit.go.kr" target="_blank">국토부 →</a></div></span></div></div>
         <div class="rblock"><table class="unit-tbl"><thead><tr><th>용도</th><th>최소</th><th>평균</th><th>최대</th></tr></thead><tbody id="unitRefBody"></tbody></table></div>
       </div>
@@ -335,7 +377,7 @@ select.ffi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.
         <div id="revenueInputs"></div>
       </div>
       <div class="section">
-        <div class="sec-head"><div class="sec-label">부대비용 (공사비 기준 %)</div></div>
+        <div class="sec-head"><div class="sec-label">부대비용 <span style="font-size:9px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">(산정 기준: 취득세=토지비, 설계·감리=공사비VAT전, 마케팅=분양수입, 금융수수료=대출금)</span></div></div>
         <div class="extra-list" id="sideGrid"></div>
         <button class="btn-add g" onclick="addSideItem()" style="margin-top:8px">+ 부대비용 항목 추가</button>
       </div>
@@ -351,6 +393,10 @@ select.ffi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.
     </div>
     <div id="sub-fcf" style="display:none">
       <div class="chart-wrap"><div class="chart-title">분기별 현금흐름 · 누적 (억원)</div><canvas id="cfChart"></canvas></div>
+      <!-- 현금흐름 문장형 해설 -->
+      <div id="cfNarrative" style="background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:14px 16px;margin-bottom:12px;font-size:13px;line-height:1.9;color:var(--text2)">
+        입력값을 채우면 분석 내용이 여기에 표시됩니다.
+      </div>
       <div class="rblock"><div class="rblock-head open" onclick="toggleBlock(this)">분기별 현금흐름표 <span class="chevron">▼</span></div><div class="rblock-body open" id="cfTable"></div></div>
     </div>
     <div id="sub-fr" style="display:none">
@@ -374,7 +420,60 @@ select.ffi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.
       <div class="rblock"><div class="rblock-head open" onclick="toggleBlock(this)">총사업비 구성 <span class="chevron">▼</span></div><div class="rblock-body open" id="fsBreakdown"></div></div>
       <div class="rblock"><div class="rblock-head open" onclick="toggleBlock(this)">수입 구성 <span class="chevron">▼</span></div><div class="rblock-body open" id="fsRevenue"></div></div>
       <div class="notice">IRR: Newton-Raphson 분기 현금흐름 기반 연환산. NPV: 요구수익률 기준.<br><a href="https://www.kdi.re.kr" target="_blank">KDI 예비타당성 기준</a> · <a href="https://www.r-one.co.kr" target="_blank">한국부동산원</a></div>
+
+      <!-- 민감도 분석 -->
+      <div class="section" style="margin-top:20px">
+        <div class="sec-head">
+          <div class="sec-label">민감도 분석 <span class="tip-wrap"><button class="tip-btn">?</button><div class="tip-box">주요 변수를 ±% 범위로 변화시킬 때 개발이익·IRR이 어떻게 바뀌는지 분석합니다. 기준값은 현재 입력값 기준.</div></span></div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:11px;color:var(--muted)">변동 범위</span>
+            <select class="fi" id="sensRange" style="height:32px;font-size:12px;width:100px;padding:0 8px" onchange="renderSensitivity()">
+              <option value="10">±10%</option>
+              <option value="20" selected>±20%</option>
+              <option value="30">±30%</option>
+            </select>
+          </div>
+        </div>
+        <div id="sensGrid" style="overflow-x:auto"></div>
+      </div>
+
+      <!-- 세전/세후 IRR -->
+      <div class="section" style="margin-top:4px">
+        <div class="sec-head">
+          <div class="sec-label">세전 / 세후 IRR <span class="tip-wrap"><button class="tip-btn">?</button><div class="tip-box">법인세를 반영한 세후 IRR 산출.<br><b>법인세율 (2024년 기준):</b><br>· 과세표준 2억 이하: 9%<br>· 2억~200억: 19%<br>· 200억~3,000억: 21%<br>· 3,000억 초과: 24%<br>개발이익(분양수입-총사업비)에 법인세 적용 후 세후 CF 재산출.<br><a href="https://www.nts.go.kr" target="_blank">국세청 →</a></div></span></div>
+        </div>
+        <div class="fg" style="margin-bottom:12px">
+          <div class="field">
+            <label class="fl">법인세율 (%) <span class="tip-wrap"><button class="tip-btn">?</button><div class="tip-box">실효 법인세율 직접 입력. 지방소득세(법인세의 10%) 포함 시 약 +1~2.4% 가산.<br>소규모 법인(과표 2억 이하): 약 9.9% (지방세 포함)</div></span></label>
+            <input type="number" class="fi" id="corpTaxRate" value="19.0" min="0" max="50" step="0.5" oninput="recalcFS()">
+          </div>
+          <div class="field">
+            <label class="fl">지방소득세 포함</label>
+            <select class="fi" id="localTaxYN" onchange="recalcFS()">
+              <option value="1.10">포함 (법인세의 10%)</option>
+              <option value="1.00">별도</option>
+            </select>
+          </div>
+        </div>
+        <div class="rblock">
+          <div class="rblock-head open" onclick="toggleBlock(this)">세전 / 세후 비교 <span class="chevron">▼</span></div>
+          <div class="rblock-body open" id="taxIrrBlock"></div>
+        </div>
+      </div>
     </div>
+  </div>
+
+  <!-- 안 비교 탭 -->
+  <div id="top-compare" style="display:none">
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+      <button onclick="saveScenario(1)" style="font-family:var(--sans);font-size:13px;font-weight:500;padding:0 16px;height:40px;border-radius:8px;border:1.5px solid var(--accent);background:var(--accent-light);color:var(--accent);cursor:pointer">현재 입력값 → 안1로 저장</button>
+      <button onclick="saveScenario(2)" style="font-family:var(--sans);font-size:13px;font-weight:500;padding:0 16px;height:40px;border-radius:8px;border:1.5px solid var(--green);background:var(--green-light);color:var(--green);cursor:pointer">현재 입력값 → 안2로 저장</button>
+      <button onclick="clearScenarios()" style="font-family:var(--sans);font-size:13px;font-weight:500;padding:0 16px;height:40px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);color:var(--text2);cursor:pointer">초기화</button>
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:12px;line-height:1.7">
+      입력 탭에서 안1 조건 입력 후 "안1로 저장", 조건 변경 후 "안2로 저장"하면 아래에 비교표가 생성됩니다.
+    </div>
+    <div id="compareGrid"></div>
   </div>
 </div>
 <div class="btm-bar">
@@ -388,23 +487,21 @@ const USE_OPTIONS=[
   {key:'retail2',  label:'근린생활 2종',    price:200, sk:'retail'},
   {key:'parking_u',label:'지하주차장',      price:165, sk:null},
   {key:'parking_g',label:'지상주차장',      price:120, sk:null},
-  {key:'apt',      label:'공동주택(아파트)', price:245, sk:'apt'},
-  {key:'multi',    label:'다세대주택',      price:210, sk:'multi'},
   {key:'office',   label:'업무시설',        price:220, sk:'office'},
   {key:'worship',  label:'종교시설',        price:195, sk:null},
   {key:'etc',      label:'기타',           price:180, sk:'etc'},
 ];
 const UNIT_PRICES={};
-const UP_INIT={retail1:{min:165,avg:185,max:210},retail2:{min:175,avg:200,max:230},parking_u:{min:145,avg:165,max:185},parking_g:{min:100,avg:120,max:140},apt:{min:220,avg:245,max:280},multi:{min:185,avg:210,max:240},office:{min:195,avg:220,max:255},worship:{min:170,avg:195,max:225},etc:{min:155,avg:180,max:210}};
+const UP_INIT={retail1:{min:165,avg:185,max:210},retail2:{min:175,avg:200,max:230},parking_u:{min:145,avg:165,max:185},parking_g:{min:100,avg:120,max:140},office:{min:195,avg:220,max:255},worship:{min:170,avg:195,max:225},etc:{min:155,avg:180,max:210}};
 Object.assign(UNIT_PRICES,JSON.parse(JSON.stringify(UP_INIT)));
-const REV_GROUPS=[{key:'retail',label:'근린생활시설'},{key:'apt',label:'공동주택(아파트)'},{key:'multi',label:'다세대주택'},{key:'office',label:'업무시설'},{key:'etc',label:'기타'}];
-const revData={};REV_GROUPS.forEach(g=>{revData[g.key]={saleUnit:500,rentUnit:5,vacancy:5}});
-let extraItems=[],extraId=0;
+const REV_GROUPS=[{key:'retail',label:'근린생활시설'},{key:'office',label:'업무시설'},{key:'etc',label:'기타'}];
+const revData={};REV_GROUPS.forEach(g=>{revData[g.key]={saleUnit:500,rentUnit:5,vacancy:5,rentGrowth:2.0,deposit:0,holdYears:10,capRate:5.0}});let extraItems=[],extraId=0;
 let sideItems=[],sideId=0;
 let floors=[],floorId=0;
 let _cfData=[];
 let _bepUnit=0;
-let _usePhyeong=false; // false=㎡, true=평
+let _usePhyeong=false;
+let _scenarios={1:null,2:null}; // 안1, 안2 저장
 
 window.onload=function(){
   floors=[
@@ -415,7 +512,8 @@ window.onload=function(){
   ];
   [{label:'가설공사',rate:4.0},{label:'전기·통신공사',rate:7.0},{label:'기계·위생공사',rate:6.0},{label:'소방공사',rate:2.5},{label:'외부공사(포장·조경)',rate:3.0},{label:'예비비',rate:3.0}]
     .forEach(d=>extraItems.push({id:extraId++,...d}));
-  [{label:'취득세',rate:4.6,tip:'토지매입가 기준 4.6% (주택 외 기준).'},{label:'설계비',rate:2.5,tip:'공사비 기준 2~3% 수준.'},{label:'감리비',rate:1.0,tip:'공사비 기준 0.8~1.5%.'},{label:'분양마케팅비',rate:1.5,tip:'분양수입 기준 1~2%. 임대전용 시 제외.'},{label:'금융수수료',rate:0.5,tip:'PF 대출금액 기준 0.5~1%.'}]
+  // base: 'land'=토지비, 'const'=공사비(VAT전), 'rev'=분양수입, 'loan'=대출금액, 'constVAT'=공사비(VAT포함)
+  [{label:'취득세',rate:4.6,base:'land',tip:'토지매입가 × 4.6% (주택 외 상업·업무용 기준).<br>주택 취득세는 1~3%로 별도 산정 필요.'},{label:'설계비',rate:2.5,base:'const',tip:'직접공사비(VAT 전) 기준 2~3%. 규모·난이도에 따라 상이.'},{label:'감리비',rate:1.0,base:'const',tip:'직접공사비(VAT 전) 기준 0.8~1.5%.'},{label:'분양마케팅비',rate:1.5,base:'rev',tip:'분양수입 기준 1~2%. 임대전용 시 제외.'},{label:'금융수수료',rate:0.5,base:'loan',tip:'PF 대출금액 기준 0.5~1%.'}]
     .forEach(d=>sideItems.push({id:sideId++,...d}));
   buildUnitRefTable();renderExtraGrid();renderSideGrid();sortFloors();renderFloors();buildRevenueInputs();recalcCost();
   const sv=localStorage.getItem('cck_v4');if(sv){try{applyData(JSON.parse(sv));}catch(e){}}
@@ -472,6 +570,7 @@ function removeFloor(idx){if(floors.length<=1)return;floors.splice(idx,1);render
 function hCoeff(h,base){const b=parseFloat(base)||2.8;return Math.min(Math.max((h/b)*0.9+0.1,0.85),1.35);}
 
 function recalcCost(){
+  validateInputs();
   const sC=parseFloat(document.getElementById('structType').value)||1;
   const rC=parseFloat(document.getElementById('region').value)||1;
   const baseH=parseFloat(document.getElementById('baseHeight').value)||2.8;
@@ -562,9 +661,21 @@ function removeExtra(i){extraItems.splice(i,1);renderExtraGrid();recalcCost();}
 
 function renderSideGrid(){
   const g=document.getElementById('sideGrid');if(!g)return;g.innerHTML='';
-  sideItems.forEach((d,i)=>{const div=document.createElement('div');div.className='extra-item';const tipH=d.tip?`<span class="tip-wrap"><button class="tip-btn">?</button><div class="tip-box">${d.tip}</div></span>`:'';div.innerHTML=`<span class="ex-label">${d.label}${tipH}</span><input type="number" class="ex-inp" value="${d.rate}" min="0" max="50" step="0.1" onchange="sideItems[${i}].rate=+this.value;recalcFS()"><span class="ex-sfx">%</span><button class="btn-del" onclick="removeSide(${i})">×</button>`;g.appendChild(div);});
+  const baseLabels={land:'토지비',const:'공사비(VAT전)',constVAT:'공사비(VAT포함)',rev:'분양수입',loan:'대출금액'};
+  sideItems.forEach((d,i)=>{
+    const div=document.createElement('div');div.className='extra-item';div.style.flexWrap='wrap';div.style.gap='8px';
+    const tipH=d.tip?`<span class="tip-wrap"><button class="tip-btn">?</button><div class="tip-box">${d.tip}</div></span>`:'';
+    const baseOpts=['land','const','constVAT','rev','loan'].map(k=>`<option value="${k}"${(d.base||'constVAT')===k?' selected':''}>${baseLabels[k]}</option>`).join('');
+    div.innerHTML=`
+      <input class="fi" style="height:34px;font-size:12px;flex:1;min-width:100px" value="${d.label}" onchange="sideItems[${i}].label=this.value;recalcFS()">${tipH}
+      <select style="font-family:var(--sans);font-size:11px;height:34px;border:1.5px solid var(--border);border-radius:6px;background:var(--bg);padding:0 6px;color:var(--text2);cursor:pointer;min-width:90px" onchange="sideItems[${i}].base=this.value;recalcFS()">${baseOpts}</select>
+      <input type="number" class="ex-inp" value="${d.rate}" min="0" max="100" step="0.1" onchange="sideItems[${i}].rate=+this.value;recalcFS()">
+      <span class="ex-sfx">%</span>
+      <button class="btn-del" onclick="removeSide(${i})">×</button>`;
+    g.appendChild(div);
+  });
 }
-function addSideItem(){sideItems.push({id:sideId++,label:'부대비용',rate:1.0,tip:''});renderSideGrid();recalcFS();}
+function addSideItem(){sideItems.push({id:sideId++,label:'부대비용',rate:1.0,base:'constVAT',tip:''});renderSideGrid();recalcFS();}
 function removeSide(i){sideItems.splice(i,1);renderSideGrid();recalcFS();}
 
 function buildRevenueInputs(){
@@ -573,14 +684,47 @@ function buildRevenueInputs(){
   const c=document.getElementById('revenueInputs');if(!c)return;c.innerHTML='';
   const dt=document.getElementById('devType').value;
   REV_GROUPS.filter(g=>active.has(g.key)).forEach(g=>{
-    const d=revData[g.key]||{saleUnit:500,rentUnit:5,vacancy:5};
+    const d=revData[g.key]||{saleUnit:500,rentUnit:5,vacancy:5,rentGrowth:2.0,deposit:0,holdYears:10,capRate:5.0};
     const area=floors.filter(f=>{const u=USE_OPTIONS.find(x=>x.key===f.use);return u&&u.sk===g.key;}).reduce((s,f)=>s+(f.priv||0),0);
     const div=document.createElement('div');div.className='rev-card';
-    div.innerHTML=`<div class="sec-label" style="margin-bottom:10px">${g.label} <span style="font-size:11px;font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0">(전용 ${fmt(area)} ㎡)</span></div><div class="fg">
-      ${dt!=='rent'?`<div class="field"><label class="fl">분양가 (만원/㎡)</label><input type="number" class="fi" value="${d.saleUnit}" min="0" step="10" onchange="revData['${g.key}'].saleUnit=+this.value;recalcFS()"></div>`:''}
-      ${dt!=='sale'?`<div class="field"><label class="fl">임대료 (만원/㎡/월)</label><input type="number" class="fi" value="${d.rentUnit}" min="0" step="0.5" onchange="revData['${g.key}'].rentUnit=+this.value;recalcFS()"></div>
-      <div class="field"><label class="fl">공실률 (%)</label><input type="number" class="fi" value="${d.vacancy}" min="0" max="100" step="1" onchange="revData['${g.key}'].vacancy=+this.value;recalcFS()"></div>`:''}
-    </div>`;
+
+    const saleHtml=dt!=='rent'?`
+      <div class="field">
+        <label class="fl">분양가 (만원/㎡)</label>
+        <input type="number" class="fi" value="${d.saleUnit}" min="0" step="10" onchange="revData['${g.key}'].saleUnit=+this.value;recalcFS()">
+      </div>`:'';
+
+    const rentHtml=dt!=='sale'?`
+      <div class="field">
+        <label class="fl">월 임대료 (만원/㎡) <span class="tip-wrap"><button class="tip-btn">?</button><div class="tip-box">전용면적 기준 월 임대료.<br>서울 근생 1층 통상 5~15만원/㎡.<br><a href="https://www.r-one.co.kr" target="_blank">한국부동산원 →</a></div></span></label>
+        <input type="number" class="fi" value="${d.rentUnit}" min="0" step="0.5" onchange="revData['${g.key}'].rentUnit=+this.value;recalcFS()">
+      </div>
+      <div class="field">
+        <label class="fl">보증금 (만원/㎡) <span class="tip-wrap"><button class="tip-btn">?</button><div class="tip-box">전용면적 기준 보증금. 현재 가치로 즉시 수입에 반영됩니다. 입주 시 수취, 퇴거 시 반환 구조이나 초기 자금 조달 효과 있음.</div></span></label>
+        <input type="number" class="fi" value="${d.deposit||0}" min="0" step="10" onchange="revData['${g.key}'].deposit=+this.value;recalcFS()">
+      </div>
+      <div class="field">
+        <label class="fl">공실률 (%)</label>
+        <input type="number" class="fi" value="${d.vacancy}" min="0" max="100" step="1" onchange="revData['${g.key}'].vacancy=+this.value;recalcFS()">
+      </div>
+      <div class="field">
+        <label class="fl">임대료 상승률 (%/년) <span class="tip-wrap"><button class="tip-btn">?</button><div class="tip-box">연간 임대료 인상률. 상가임대차보호법상 연 5% 상한 (2023년 기준). 실무에서 통상 2~3% 적용.<br><a href="https://www.law.go.kr" target="_blank">상가임대차보호법 →</a></div></span></label>
+        <input type="number" class="fi" value="${d.rentGrowth||2.0}" min="0" max="20" step="0.5" onchange="revData['${g.key}'].rentGrowth=+this.value;recalcFS()">
+      </div>
+      <div class="field">
+        <label class="fl">보유 기간 (년) <span class="tip-wrap"><button class="tip-btn">?</button><div class="tip-box">임대 운영 후 매각 시점. 이 기간 동안의 임대수익과 기말 매각가치를 합산합니다.</div></span></label>
+        <input type="number" class="fi" value="${d.holdYears||10}" min="1" max="50" step="1" onchange="revData['${g.key}'].holdYears=+this.value;recalcFS()">
+      </div>
+      <div class="field">
+        <label class="fl">매각 Cap Rate (%) <span class="tip-wrap"><button class="tip-btn">?</button><div class="tip-box">보유기간 말 매각 시 적용 자본환원율. Cap Rate = 순영업이익(NOI) ÷ 매각가격.<br>낮을수록 고가 매각. 서울 근생 통상 3~6%.<br><a href="https://www.r-one.co.kr" target="_blank">한국부동산원 →</a></div></span></label>
+        <input type="number" class="fi" value="${d.capRate||5.0}" min="0.5" max="20" step="0.5" onchange="revData['${g.key}'].capRate=+this.value;recalcFS()">
+      </div>`:'';
+
+    div.innerHTML=`
+      <div class="sec-label" style="margin-bottom:10px">${g.label}
+        <span style="font-size:11px;font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0">(전용 ${fmt(area)} ㎡)</span>
+      </div>
+      <div class="fg">${saleHtml}${rentHtml}</div>`;
     c.appendChild(div);
   });
 }
@@ -599,29 +743,68 @@ function recalcFS(){
   const pat=document.getElementById('constPattern').value;
   const dt=document.getElementById('devType').value;
 
-  // side costs: base = constVAT for design/super, land for acq
-  let sideTotal=0;const sideBreak=[];
-  sideItems.forEach(d=>{
-    let base=constVAT;
-    if(d.label.includes('취득'))base=landEok;
-    else if(d.label.includes('마케팅'))base=0; // 분양수입 연동 복잡하므로 일단 공사비 기준
-    const amt=base*d.rate/100;sideTotal+=amt;sideBreak.push({label:d.label,amt});
-  });
-
-  const totCostEok=landEok+constVAT+sideTotal;
-  const loanEok=totCostEok*ltvR/100;
-  const interestEok=loanEok*pfR/100*(constM/12);
-
-  // revenue
+  // 수입 먼저 계산 (마케팅비 기준에 필요)
   const areaByGrp={};REV_GROUPS.forEach(g=>{areaByGrp[g.key]=0;});
   floors.forEach(f=>{const u=USE_OPTIONS.find(x=>x.key===f.use);if(u&&u.sk)areaByGrp[u.sk]+=(f.priv||0);});
   let totRevEok=0;const revBreak=[];
   REV_GROUPS.forEach(g=>{
     const area=areaByGrp[g.key];if(!area)return;
-    const d=revData[g.key]||{saleUnit:0,rentUnit:0,vacancy:5};
-    if(dt==='sale'||dt==='mixed'){const e=(area*d.saleUnit)/10000;totRevEok+=e;revBreak.push({label:`${g.label} 분양수입`,amt:e});}
-    if(dt==='rent'||dt==='mixed'){const e=(area*d.rentUnit*12*(1-d.vacancy/100))/10000*10;totRevEok+=e;revBreak.push({label:`${g.label} 임대수익(10년)`,amt:e});}
+    const d=revData[g.key]||{saleUnit:0,rentUnit:0,vacancy:5,rentGrowth:2,deposit:0,holdYears:10,capRate:5};
+    if(dt==='sale'||dt==='mixed'){
+      const e=(area*d.saleUnit)/10000;
+      totRevEok+=e;
+      revBreak.push({label:`${g.label} 분양수입`,amt:e,detail:''});
+    }
+    if(dt==='rent'||dt==='mixed'){
+      const occ=(1-(d.vacancy||0)/100);
+      const gr=(d.rentGrowth||0)/100;
+      const hy=d.holdYears||10;
+      const capR=(d.capRate||5)/100;
+      const dep=(area*(d.deposit||0))/10000; // 보증금 현재가치 (즉시 수취)
+
+      // 보유기간 매년 임대료(상승률 반영) 합산 → 현재가치 (단순 합산, 할인 미적용 - 별도 NPV로 처리)
+      let rentSum=0;
+      for(let y=1;y<=hy;y++){
+        const annualRent=(area*d.rentUnit*12*occ*Math.pow(1+gr,y-1))/10000;
+        rentSum+=annualRent;
+      }
+      // 기말 매각가치: 마지막 연도 NOI ÷ Cap Rate
+      const lastNOI=(area*d.rentUnit*12*occ*Math.pow(1+gr,hy-1))/10000;
+      const saleVal=capR>0?lastNOI/capR:0;
+
+      totRevEok+=rentSum+dep+saleVal;
+      revBreak.push({
+        label:`${g.label} 임대수익 (${hy}년)`,
+        amt:rentSum,
+        detail:`임대합계 ${rentSum.toFixed(1)}억 + 보증금 ${dep.toFixed(1)}억 + 매각가치 ${saleVal.toFixed(1)}억`
+      });
+      if(dep>0) revBreak.push({label:`  └ 보증금 수취`,amt:dep,detail:'',isIndent:true});
+      revBreak.push({label:`  └ 기말 매각가치 (NOI÷${d.capRate}%)`,amt:saleVal,detail:'',isIndent:true});
+    }
   });
+
+  // 대출금 추정 (부대비용 제외 기준)
+  const baseCostEok=landEok+constVAT;
+  const loanEstimate=baseCostEok*ltvR/100;
+
+  // 부대비용: base key 기반 정확한 산정
+  let sideTotal=0;const sideBreak=[];
+  sideItems.forEach(d=>{
+    const base=d.base||'constVAT';
+    let baseAmt=0;
+    if(base==='land')baseAmt=landEok;
+    else if(base==='const')baseAmt=constEok;
+    else if(base==='constVAT')baseAmt=constVAT;
+    else if(base==='rev')baseAmt=totRevEok;
+    else if(base==='loan')baseAmt=loanEstimate;
+    const amt=baseAmt*d.rate/100;
+    sideTotal+=amt;
+    sideBreak.push({label:d.label,base,amt});
+  });
+
+  const totCostEok=landEok+constVAT+sideTotal;
+  const loanEok=totCostEok*ltvR/100;
+  const interestEok=loanEok*pfR/100*(constM/12);
 
   const profitEok=totRevEok-(totCostEok+interestEok);
   const profitRate=(totCostEok+interestEok)>0?profitEok/(totCostEok+interestEok)*100:0;
@@ -708,22 +891,133 @@ function recalcFS(){
   // KPI
   const kg=document.getElementById('kpiGrid');
   if(kg)kg.innerHTML=`
-    <div class="kpi-card ${profitEok>=0?'gn':'rd'}"><div class="kpi-label">개발이익</div><div class="kpi-val">${Math.abs(profitEok).toFixed(1)}<span class="kpi-unit">억</span></div><div class="kpi-sub">${profitEok>=0?'흑자':'적자'} · 수익률 ${profitRate.toFixed(1)}%</div></div>
-    <div class="kpi-card acc"><div class="kpi-label">IRR (연환산)</div><div class="kpi-val">${isNaN(irr)?'—':irr.toFixed(1)}<span class="kpi-unit">%</span></div><div class="kpi-sub">요구수익률 ${discR}%</div></div>
-    <div class="kpi-card"><div class="kpi-label">NPV</div><div class="kpi-val">${npv.toFixed(1)}<span class="kpi-unit">억</span></div><div class="kpi-sub">${npv>=0?'타당':'재검토'}</div></div>
-    <div class="kpi-card"><div class="kpi-label">총사업비</div><div class="kpi-val">${(totCostEok+interestEok).toFixed(1)}<span class="kpi-unit">억</span></div><div class="kpi-sub">PF ${loanEok.toFixed(1)}억 (${ltvR}%)</div></div>`;
+    <div class="kpi-card ${profitEok>=0?'gn':'rd'}">
+      <div class="kpi-label">개발이익</div>
+      <div class="kpi-val">${Math.abs(profitEok).toFixed(1)}<span class="kpi-unit">억</span></div>
+      <div class="kpi-sub">${profitEok>=0?'흑자':'적자'} · 수익률 ${profitRate.toFixed(1)}%</div>
+    </div>
+    <div class="kpi-card acc" style="position:relative">
+      <div class="kpi-label" style="display:flex;align-items:center;gap:5px">IRR (연환산)
+        <span class="tip-wrap"><button class="tip-btn" style="border-color:rgba(255,255,255,.4);color:rgba(255,255,255,.6)">?</button>
+        <div class="tip-box" style="left:auto;right:0">
+          <b>내부수익률 (Internal Rate of Return)</b><br>
+          투자에서 회수까지 전체 현금흐름의 실질 수익률. 분기 CF 기준 연환산 값.<br><br>
+          <b>판단 기준:</b><br>
+          · IRR &gt; 요구수익률(${discR}%) → 투자 타당<br>
+          · IRR &lt; 요구수익률 → 투자 재검토<br>
+          · 일반 민간개발 목표: 10~15%<br><br>
+          <a href="https://www.kdi.re.kr" target="_blank">KDI 예비타당성 기준 →</a>
+        </div></span>
+      </div>
+      <div class="kpi-val">${isNaN(irr)?'—':irr.toFixed(1)}<span class="kpi-unit">%</span></div>
+      <div class="kpi-sub">요구수익률 ${discR}% · ${isNaN(irr)?'산출불가':irr>discR?'✓ 초과':'✗ 미달'}</div>
+    </div>
+    <div class="kpi-card" style="position:relative">
+      <div class="kpi-label" style="display:flex;align-items:center;gap:5px">NPV
+        <span class="tip-wrap"><button class="tip-btn">?</button>
+        <div class="tip-box" style="left:auto;right:0">
+          <b>순현재가치 (Net Present Value)</b><br>
+          미래 현금흐름을 요구수익률(${discR}%)로 할인해 현재 가치로 환산한 총이익.<br><br>
+          <b>판단 기준:</b><br>
+          · NPV &gt; 0 → 요구수익률 이상 수익 기대 (투자 타당)<br>
+          · NPV &lt; 0 → 요구수익률 미달 (재검토)<br>
+          · NPV = 0인 할인율이 곧 IRR<br><br>
+          현재 할인율: 연 ${discR}% (분기 ${(discR/4).toFixed(2)}%)<br>
+          <a href="https://www.kdi.re.kr" target="_blank">KDI 예비타당성 기준 →</a>
+        </div></span>
+      </div>
+      <div class="kpi-val">${npv.toFixed(1)}<span class="kpi-unit">억</span></div>
+      <div class="kpi-sub">${npv>=0?'✓ 투자 타당':'✗ 재검토'} (할인율 ${discR}%)</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">총사업비</div>
+      <div class="kpi-val">${(totCostEok+interestEok).toFixed(1)}<span class="kpi-unit">억</span></div>
+      <div class="kpi-sub">PF ${loanEok.toFixed(1)}억 (${ltvR}%)</div>
+    </div>`;
 
+  const baseLabels={land:'토지비기준',const:'공사비기준',constVAT:'공사비(VAT)기준',rev:'분양수입기준',loan:'대출금기준'};
   const fb=document.getElementById('fsBreakdown');
-  if(fb)fb.innerHTML=`<div class="rr"><span class="rr-l">토지비</span><span class="rr-v">${landEok.toFixed(2)} 억</span></div><div class="rr"><span class="rr-l">공사비 (VAT 포함)</span><span class="rr-v">${constVAT.toFixed(2)} 억</span></div>`+sideBreak.map(x=>`<div class="rr ind"><span class="rr-l">${x.label}</span><span class="rr-v">${x.amt.toFixed(2)} 억</span></div>`).join('')+`<div class="rr ind"><span class="rr-l">PF 이자 (공사기간)</span><span class="rr-v">${interestEok.toFixed(2)} 억</span></div><div class="r-div"></div><div class="rr strong"><span class="rr-l">총사업비</span><span class="rr-v">${(totCostEok+interestEok).toFixed(2)} 억</span></div>`;
+  if(fb)fb.innerHTML=`<div class="rr"><span class="rr-l">토지비</span><span class="rr-v">${landEok.toFixed(2)} 억</span></div><div class="rr"><span class="rr-l">공사비 (VAT 포함)</span><span class="rr-v">${constVAT.toFixed(2)} 억</span></div>`+sideBreak.map(x=>`<div class="rr ind"><span class="rr-l">${x.label} <span style="font-size:10px;color:var(--muted)">[${baseLabels[x.base]||''}]</span></span><span class="rr-v">${x.amt.toFixed(2)} 억</span></div>`).join('')+`<div class="rr ind"><span class="rr-l">PF 이자 (공사기간)</span><span class="rr-v">${interestEok.toFixed(2)} 억</span></div><div class="r-div"></div><div class="rr strong"><span class="rr-l">총사업비</span><span class="rr-v">${(totCostEok+interestEok).toFixed(2)} 억</span></div>`;
 
   const fr=document.getElementById('fsRevenue');
-  if(fr)fr.innerHTML=revBreak.map(r=>`<div class="rr"><span class="rr-l">${r.label}</span><span class="rr-v">${r.amt.toFixed(2)} 억</span></div>`).join('')+`<div class="r-div"></div><div class="rr strong ${profitEok>=0?'gn':'rd'}"><span class="rr-l">개발이익</span><span class="rr-v">${profitEok.toFixed(2)} 억</span></div>`;
+  if(fr)fr.innerHTML=revBreak.map(r=>
+    r.isIndent
+      ?`<div class="rr ind"><span class="rr-l">${r.label}</span><span class="rr-v">${r.amt.toFixed(2)} 억</span></div>`
+      :`<div class="rr"><span class="rr-l">${r.label}${r.detail?`<span style="font-size:10px;color:var(--muted);margin-left:6px">(${r.detail})</span>`:''}</span><span class="rr-v">${r.amt.toFixed(2)} 억</span></div>`
+  ).join('')+`<div class="r-div"></div><div class="rr strong ${profitEok>=0?'gn':'rd'}"><span class="rr-l">개발이익</span><span class="rr-v">${profitEok.toFixed(2)} 억</span></div>`;
 
   // CF table
   const ct=document.getElementById('cfTable');
   if(ct)ct.innerHTML=`<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px"><tr style="background:var(--surface2)"><th style="padding:6px 10px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)">분기</th><th style="padding:6px 10px;text-align:right;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)">현금흐름(억)</th><th style="padding:6px 10px;text-align:right;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)">누적(억)</th></tr>`+cfs.map((c,i)=>`<tr style="border-bottom:1px solid var(--surface2)"><td style="padding:5px 10px;color:var(--text2)">Q${i+1}</td><td style="padding:5px 10px;text-align:right;font-family:var(--mono);color:${c>=0?'var(--green)':'var(--warn)'}">${c>=0?'+':''}${c.toFixed(2)}</td><td style="padding:5px 10px;text-align:right;font-family:var(--mono);color:${cumCF[i]>=0?'var(--green)':'var(--warn)'}">${cumCF[i]>=0?'+':''}${cumCF[i]}</td></tr>`).join('')+`</table></div>`;
 
   drawChart(cfs,cumCF);
+
+  // 현금흐름 문장형 해설
+  const cfN=document.getElementById('cfNarrative');
+  if(cfN){
+    // 자금 최저점 (최대 누적 적자 시점)
+    let minCum=0,minQ=0;
+    cumCF.forEach((v,i)=>{if(v<minCum){minCum=v;minQ=i+1;}});
+    // 흑자 전환 분기
+    let breakEvenQ=null;
+    for(let i=0;i<cumCF.length;i++){if(cumCF[i]>=0&&(i===0||cumCF[i-1]<0)){breakEvenQ=i+1;break;}}
+    const totalQ=cfs.length;
+    const totalM=permitM+constM+saleM;
+    const irrStr=isNaN(irr)?'산출 불가':irr.toFixed(1)+'%';
+    const irrJudge=isNaN(irr)?'':irr>discR?`요구수익률(${discR}%)을 <b style="color:var(--green)">초과</b>하여 투자 타당성이 있습니다.`:`요구수익률(${discR}%)에 <b style="color:var(--warn)">미달</b>하여 조건 개선이 필요합니다.`;
+    const npvJudge=npv>=0?`<b style="color:var(--green)">양(+)</b>으로 요구수익률 이상의 가치를 창출합니다.`:`<b style="color:var(--warn)">음(-)</b>으로 현재 조건에서는 요구수익률을 충족하지 못합니다.`;
+    const beStr=breakEvenQ?`Q${breakEvenQ} (사업 착수 후 약 ${breakEvenQ*3}개월)`:'분석 기간 내 미전환';
+    cfN.innerHTML=`
+      <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)">현금흐름 해설</div>
+      <p style="margin-bottom:8px">
+        총 사업기간은 <b>${totalM}개월</b>(인허가 ${permitM}개월 + 공사 ${constM}개월 + 분양·임대 ${saleM}개월)이며,
+        분기 기준 <b>${totalQ}개 구간</b>으로 분석합니다.
+      </p>
+      <p style="margin-bottom:8px">
+        사업 초기 토지비·부대비용 지출로 현금이 유출되고, 공사 기간 중 공사비(${constVAT.toFixed(1)}억원, VAT 포함)가
+        ${pat==='front'?'전반에 집중':`pat==='back'?'후반에 집중':'균등하게'}`} 집행됩니다.
+        자금 최저점은 <b>Q${minQ}</b>로, 누적 순지출이 최대 <b style="color:var(--warn)">${Math.abs(minCum).toFixed(1)}억원</b>에 달합니다.
+        이 시점이 PF 대출 한도(${loanEok.toFixed(1)}억원)로 충당 가능한지 확인이 필요합니다.
+      </p>
+      <p style="margin-bottom:8px">
+        누적 현금흐름 흑자 전환 시점은 <b>${beStr}</b>입니다.
+        ${breakEvenQ?`전환 이후부터 실질적인 수익 회수가 시작됩니다.`:'분양가 또는 사업 조건 재검토가 필요합니다.'}
+      </p>
+      <p style="margin-bottom:0">
+        IRR은 <b>${irrStr}</b>이며, ${irrJudge}
+        NPV는 <b>${npv.toFixed(1)}억원</b>으로 ${npvJudge}
+        ${!isNaN(irr)&&irr>discR&&npv>0?`현재 입력 조건에서 사업성이 <b style="color:var(--green)">확보</b>된 것으로 판단됩니다.`:
+          !isNaN(irr)&&irr<discR?`분양가 상향, 토지비 절감, 또는 공사비 조정을 통해 수익성 개선을 검토하십시오.`:''}
+      </p>`;
+  }
+
+  // 세전/세후 IRR
+  const corpTaxEl=document.getElementById('corpTaxRate');
+  const localTaxEl=document.getElementById('localTaxYN');
+  if(corpTaxEl&&localTaxEl){
+    const corpRate=(parseFloat(corpTaxEl.value)||19)/100;
+    const localMult=parseFloat(localTaxEl.value)||1.1;
+    const effTaxRate=corpRate*localMult;
+    // 세후 CF: 이익 발생 분기에만 법인세 차감
+    const afterTaxCfs=cfs.map(c=>c>0?c*(1-effTaxRate):c);
+    let irrAfter=NaN;try{irrAfter=calcIRR(afterTaxCfs)*4*100;}catch(e){}
+    const taxAmt=profitEok>0?profitEok*effTaxRate:0;
+    const profitAfterTax=profitEok-taxAmt;
+    const taxBlock=document.getElementById('taxIrrBlock');
+    if(taxBlock)taxBlock.innerHTML=`
+      <div class="rr"><span class="rr-l">세전 개발이익</span><span class="rr-v">${profitEok.toFixed(2)} 억원</span></div>
+      <div class="rr ind"><span class="rr-l">법인세 (실효세율 ${(effTaxRate*100).toFixed(1)}%)</span><span class="rr-v">− ${taxAmt.toFixed(2)} 억원</span></div>
+      <div class="rr strong ${profitAfterTax>=0?'gn':'rd'}"><span class="rr-l">세후 개발이익</span><span class="rr-v">${profitAfterTax.toFixed(2)} 억원</span></div>
+      <div class="r-div"></div>
+      <div class="rr"><span class="rr-l">세전 IRR</span><span class="rr-v">${isNaN(irr)?'—':irr.toFixed(1)+'%'}</span></div>
+      <div class="rr strong"><span class="rr-l">세후 IRR</span><span class="rr-v">${isNaN(irrAfter)?'—':irrAfter.toFixed(1)+'%'}</span></div>
+      <div class="rr ind"><span class="rr-l">IRR 감소폭</span><span class="rr-v" style="color:var(--warn)">${(isNaN(irr)||isNaN(irrAfter))?'—':'−'+(irr-irrAfter).toFixed(1)+'%p'}</span></div>`;
+  }
+
+  // 민감도 분석 렌더
+  const sgEl=document.getElementById('sensGrid');
+  if(sgEl) renderSensitivity();
+
   autoSave();
 }
 
@@ -749,6 +1043,175 @@ function drawChart(cfs,cumCF){
   cfs.forEach((_,i)=>ctx.fillText('Q'+(i+1),vx(i),H-6));
 }
 
+function validateInputs(){
+  const errors=[];
+  // 층 유효성
+  floors.forEach((f,i)=>{
+    if((f.priv||0)+(f.common||0)<=0)errors.push(`${f.name}: 면적이 0입니다`);
+    if((f.height||0)<1.5)errors.push(`${f.name}: 층고가 너무 낮습니다 (최소 1.5m)`);
+    if((f.height||0)>30)errors.push(`${f.name}: 층고가 비현실적입니다 (최대 30m)`);
+  });
+  if(floors.length===0)errors.push('층을 최소 1개 이상 입력하세요');
+  // 기본정보
+  const baseH=parseFloat(document.getElementById('baseHeight').value)||0;
+  if(baseH<1.5||baseH>10)errors.push('기준층고: 1.5~10m 범위로 입력하세요');
+  // 배너 표시
+  const banner=document.getElementById('valBanner');
+  const msg=document.getElementById('valMsg');
+  if(errors.length>0){
+    banner.classList.add('show');
+    msg.textContent=errors[0]+(errors.length>1?` 외 ${errors.length-1}건`:'');
+    return false;
+  } else {
+    banner.classList.remove('show');
+    return true;
+  }
+}
+
+// 단가 시점 보정
+function recalcPriceAdj(){
+  const by=parseInt(document.getElementById('baseYear').value)||2025;
+  const ay=parseInt(document.getElementById('applyYear').value)||2025;
+  const ir=parseFloat(document.getElementById('inflRate').value)||5;
+  const years=ay-by;
+  const coeff=years<=0?1:Math.pow(1+ir/100,years);
+  document.getElementById('priceAdjDisplay').textContent='×'+coeff.toFixed(3);
+  const desc=document.getElementById('priceAdjDesc');
+  if(years<=0)desc.textContent='기준연도와 적용연도가 같아 보정 없음';
+  else desc.textContent=`${by}년 단가 → ${ay}년 기준: ${years}년간 연 ${ir}% 상승 적용 → ×${coeff.toFixed(3)} (약 +${((coeff-1)*100).toFixed(1)}%)`;
+}
+function applyPriceAdj(){
+  const by=parseInt(document.getElementById('baseYear').value)||2025;
+  const ay=parseInt(document.getElementById('applyYear').value)||2025;
+  const ir=parseFloat(document.getElementById('inflRate').value)||5;
+  const years=ay-by;
+  if(years<=0){alert('적용연도가 기준연도보다 커야 합니다.');return;}
+  const coeff=Math.pow(1+ir/100,years);
+  if(!confirm(`모든 기준단가에 ×${coeff.toFixed(3)}을 적용합니다. 계속하시겠습니까?`))return;
+  USE_OPTIONS.forEach(u=>{
+    const d=UNIT_PRICES[u.key];
+    d.min=Math.round(d.min*coeff/5)*5;
+    d.avg=Math.round(d.avg*coeff/5)*5;
+    d.max=Math.round(d.max*coeff/5)*5;
+    u.price=d.avg;
+  });
+  buildUnitRefTable();recalcCost();
+  document.getElementById('priceYear').value=`${ay}년`;
+  alert(`단가 보정 완료: 모든 단가에 ×${coeff.toFixed(3)} 적용됨`);
+}
+
+function calcFSMetrics(overrides={}){
+  // 현재 입력값 기반으로 개발이익·IRR 계산 (오버라이드 가능)
+  const constEok=getConstEok()*(overrides.constMult||1);
+  const vatM=parseFloat(document.getElementById('vatYN').value)||1.1;
+  const constVAT=constEok*vatM;
+  const landEok=getLandEok()*(overrides.landMult||1);
+  const permitM=parseInt(document.getElementById('permitM').value)||12;
+  const constM=parseInt(document.getElementById('constM').value)||18;
+  const saleM=parseInt(document.getElementById('saleM').value)||6;
+  const ltvR=parseFloat(document.getElementById('ltvRate').value)||60;
+  const pfR=(overrides.pfRate||parseFloat(document.getElementById('pfRate').value)||6);
+  const discR=parseFloat(document.getElementById('discRate').value)||10;
+  const pat=document.getElementById('constPattern').value;
+  const dt=document.getElementById('devType').value;
+  const saleMult=overrides.saleMult||1;
+
+  // 수입
+  const areaByGrp={};REV_GROUPS.forEach(g=>{areaByGrp[g.key]=0;});
+  floors.forEach(f=>{const u=USE_OPTIONS.find(x=>x.key===f.use);if(u&&u.sk)areaByGrp[u.sk]+=(f.priv||0);});
+  let totRevEok=0;
+  REV_GROUPS.forEach(g=>{
+    const area=areaByGrp[g.key];if(!area)return;
+    const d=revData[g.key]||{saleUnit:0,rentUnit:0,vacancy:5,rentGrowth:2,deposit:0,holdYears:10,capRate:5};
+    if(dt==='sale'||dt==='mixed') totRevEok+=(area*d.saleUnit*saleMult)/10000;
+    if(dt==='rent'||dt==='mixed'){
+      const occ=(1-(d.vacancy||0)/100);const gr=(d.rentGrowth||0)/100;const hy=d.holdYears||10;const capR=(d.capRate||5)/100;
+      let rs=0;for(let y=1;y<=hy;y++)rs+=(area*d.rentUnit*saleMult*12*occ*Math.pow(1+gr,y-1))/10000;
+      const lastNOI=(area*d.rentUnit*saleMult*12*occ*Math.pow(1+gr,hy-1))/10000;
+      const sv=capR>0?lastNOI/capR:0;
+      totRevEok+=rs+(area*(d.deposit||0)*saleMult)/10000+sv;
+    }
+  });
+
+  // 부대비용
+  const baseCostEok=landEok+constVAT;
+  const loanEst=baseCostEok*ltvR/100;
+  let sideTotal=0;
+  sideItems.forEach(d=>{
+    const base=d.base||'constVAT';
+    let ba=0;
+    if(base==='land')ba=landEok;else if(base==='const')ba=constEok;
+    else if(base==='constVAT')ba=constVAT;else if(base==='rev')ba=totRevEok;else if(base==='loan')ba=loanEst;
+    sideTotal+=ba*d.rate/100;
+  });
+  const totCostEok=landEok+constVAT+sideTotal;
+  const loanEok=totCostEok*ltvR/100;
+  const interestEok=loanEok*pfR/100*(constM/12);
+  const totalCost=totCostEok+interestEok;
+  const profitEok=totRevEok-totalCost;
+  const profitRate=totalCost>0?profitEok/totalCost*100:0;
+
+  // CF & IRR
+  const totalQ=Math.max(Math.ceil((permitM+constM+saleM)/3),4);
+  const cfs=new Array(totalQ).fill(0);
+  cfs[0]-=landEok;
+  const pQ=Math.max(Math.ceil(permitM/3),1);
+  for(let q=0;q<pQ&&q<totalQ;q++)cfs[q]-=sideTotal/pQ;
+  const csQ=Math.ceil(constM/3);const cStart=Math.ceil(permitM/3);
+  const wts=pat==='even'?[.25,.25,.25,.25]:pat==='front'?[.30,.30,.25,.15]:[.10,.20,.35,.35];
+  for(let i=0;i<Math.min(csQ,4);i++){const qi=cStart+i;if(qi<totalQ)cfs[qi]-=constVAT*wts[i];}
+  for(let i=0;i<Math.min(csQ,4);i++){const qi=cStart+i;if(qi<totalQ)cfs[qi]-=interestEok/Math.min(csQ,4);}
+  const sStart=cStart+csQ;const saleQs=Math.max(Math.ceil(saleM/3),1);
+  if(dt==='sale'||dt==='mixed'){for(let i=0;i<saleQs;i++){const qi=sStart+i;if(qi<totalQ)cfs[qi]+=totRevEok/saleQs;}}
+  let irr=NaN;try{irr=calcIRR(cfs)*4*100;}catch(e){}
+  return {profitEok,profitRate,irr};
+}
+
+function renderSensitivity(){
+  const range=parseInt(document.getElementById('sensRange').value)||20;
+  const steps=[-range,-range/2,0,range/2,range];
+  const vars=[
+    {key:'sale',  label:'분양가',  fn:(s)=>calcFSMetrics({saleMult:1+s/100})},
+    {key:'const', label:'공사비',  fn:(s)=>calcFSMetrics({constMult:1+s/100})},
+    {key:'land',  label:'토지비',  fn:(s)=>calcFSMetrics({landMult:1+s/100})},
+    {key:'pf',    label:'PF금리',  fn:(s)=>calcFSMetrics({pfRate:(parseFloat(document.getElementById('pfRate').value)||6)*(1+s/100)})},
+  ];
+
+  const base=calcFSMetrics();
+
+  const cols=steps.map(s=>s===0?'<b>기준</b>':(s>0?`+${s}%`:`${s}%`));
+  let html=`<table style="width:100%;border-collapse:collapse;font-size:12px;min-width:500px">
+    <thead><tr style="background:var(--surface2)">
+      <th style="padding:7px 10px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border-bottom:1px solid var(--border)">변수</th>
+      ${cols.map(c=>`<th style="padding:7px 8px;text-align:center;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);border-bottom:1px solid var(--border)">${c}</th>`).join('')}
+    </tr></thead><tbody>`;
+
+  vars.forEach(v=>{
+    html+=`<tr style="border-bottom:1px solid var(--surface2)">
+      <td style="padding:6px 10px;font-weight:600;color:var(--text2);font-size:12px">${v.label}</td>`;
+    steps.forEach(s=>{
+      const r=v.fn(s);
+      const isBase=s===0;
+      const profitDiff=r.profitEok-base.profitEok;
+      const irrVal=isNaN(r.irr)?'—':r.irr.toFixed(1)+'%';
+      const profitColor=r.profitEok>=0?'var(--green)':'var(--warn)';
+      const bg=isBase?'var(--surface2)':'var(--surface)';
+      html+=`<td style="padding:6px 8px;text-align:center;background:${bg};font-family:var(--mono);font-size:11px">
+        <div style="color:${profitColor};font-weight:${isBase?'700':'400'}">${r.profitEok.toFixed(1)}억</div>
+        <div style="font-size:10px;color:var(--muted)">${irrVal}</div>
+        ${!isBase?`<div style="font-size:9px;color:${profitDiff>=0?'var(--green)':'var(--warn)'}">${profitDiff>=0?'+':''}${profitDiff.toFixed(1)}</div>`:''}
+      </td>`;
+    });
+    html+=`</tr>`;
+  });
+
+  html+=`</tbody></table>
+    <div style="font-size:10px;color:var(--muted);margin-top:8px;line-height:1.7">
+      각 셀: 개발이익(억) / IRR(%) / 기준 대비 이익 변화(억). 변수 하나씩 단독 변화 기준 (다른 변수 고정).
+    </div>`;
+  const sg=document.getElementById('sensGrid');if(sg)sg.innerHTML=html;
+}
+
 function setUnit(usePy){
   _usePhyeong=usePy;
   document.getElementById('toggleSqm').classList.toggle('active',!usePy);
@@ -771,32 +1234,182 @@ function applyBepAuto(){
   applyBepAdj(_bepUnit);
 }
 function toggleBlock(h){h.classList.toggle('open');h.nextElementSibling.classList.toggle('open');}
+// ── 안 비교 ──
+function captureScenario(){
+  // 현재 상태 스냅샷 (계산값 포함)
+  const constEok=getConstEok();
+  const vatM=parseFloat(document.getElementById('vatYN').value)||1.1;
+  const constVAT=constEok*vatM;
+  const landEok=getLandEok();
+  const constM=parseInt(document.getElementById('constM').value)||18;
+  const ltvR=parseFloat(document.getElementById('ltvRate').value)||60;
+  const pfR=parseFloat(document.getElementById('pfRate').value)||6;
+  const discR=parseFloat(document.getElementById('discRate').value)||10;
+  const dt=document.getElementById('devType').value;
+  const corpRate=(parseFloat(document.getElementById('corpTaxRate')?.value)||19)/100;
+  const localMult=parseFloat(document.getElementById('localTaxYN')?.value)||1.1;
+  const effTax=corpRate*localMult;
+
+  let totPriv=0,totCommon=0,totDirect=0;
+  const sC=parseFloat(document.getElementById('structType').value)||1;
+  const rC=parseFloat(document.getElementById('region').value)||1;
+  const baseH=parseFloat(document.getElementById('baseHeight').value)||2.8;
+  const ugB=parseFloat(document.getElementById('ugBonus').value)||1.3;
+  floors.forEach(f=>{
+    const ug=f.ug||isUG(f.name);const u=USE_OPTIONS.find(x=>x.key===f.use)||USE_OPTIONS[0];
+    const p=f.unitOverride!==''?+f.unitOverride:u.price;
+    const cost=Math.round(((f.priv||0)+(f.common||0))*p*hCoeff(f.height,baseH)*sC*rC*(ug?ugB:1));
+    totPriv+=(f.priv||0);totCommon+=(f.common||0);totDirect+=cost;
+  });
+  let indTotal=0;extraItems.forEach(d=>{indTotal+=Math.round(totDirect*d.rate/100);});
+  const withVAT=Math.round((totDirect+indTotal)*vatM);
+  const totGFA=totPriv+totCommon;
+  const PY=3.3058;
+
+  const areaByGrp={};REV_GROUPS.forEach(g=>{areaByGrp[g.key]=0;});
+  floors.forEach(f=>{const u=USE_OPTIONS.find(x=>x.key===f.use);if(u&&u.sk)areaByGrp[u.sk]+=(f.priv||0);});
+  let totRevEok=0;
+  REV_GROUPS.forEach(g=>{
+    const area=areaByGrp[g.key];if(!area)return;
+    const d=revData[g.key]||{saleUnit:0,rentUnit:0,vacancy:5,rentGrowth:2,deposit:0,holdYears:10,capRate:5};
+    if(dt==='sale'||dt==='mixed')totRevEok+=(area*d.saleUnit)/10000;
+    if(dt==='rent'||dt==='mixed'){
+      const occ=(1-(d.vacancy||0)/100);const gr=(d.rentGrowth||0)/100;const hy=d.holdYears||10;const capR=(d.capRate||5)/100;
+      let rs=0;for(let y=1;y<=hy;y++)rs+=(area*d.rentUnit*12*occ*Math.pow(1+gr,y-1))/10000;
+      totRevEok+=rs+(area*(d.deposit||0))/10000+(capR>0?(area*d.rentUnit*12*occ*Math.pow(1+gr,hy-1))/10000/capR:0);
+    }
+  });
+  const baseCostEok=landEok+constVAT;
+  let sideTotal=0;
+  sideItems.forEach(d=>{
+    const base=d.base||'constVAT';let ba=0;
+    if(base==='land')ba=landEok;else if(base==='const')ba=constEok;
+    else if(base==='constVAT')ba=constVAT;else if(base==='rev')ba=totRevEok;else if(base==='loan')ba=baseCostEok*ltvR/100;
+    sideTotal+=ba*d.rate/100;
+  });
+  const totCostEok=landEok+constVAT+sideTotal;
+  const loanEok=totCostEok*ltvR/100;
+  const interestEok=loanEok*pfR/100*(constM/12);
+  const totalCost=totCostEok+interestEok;
+  const profitEok=totRevEok-totalCost;
+  const profitRate=totalCost>0?profitEok/totalCost*100:0;
+  const taxAmt=profitEok>0?profitEok*effTax:0;
+  const profitAfterTax=profitEok-taxAmt;
+
+  let irrBefore=NaN,irrAfter=NaN;
+  try{irrBefore=calcIRR(_cfData)*4*100;}catch(e){}
+  const afterTaxCfs=_cfData.map(c=>c>0?c*(1-effTax):c);
+  try{irrAfter=calcIRR(afterTaxCfs)*4*100;}catch(e){}
+  const qd=discR/100/4;
+  const npv=_cfData.reduce((s,c,i)=>s+c/Math.pow(1+qd,i+1),0);
+  const totalSaleArea=REV_GROUPS.reduce((s,g)=>s+areaByGrp[g.key],0);
+  const bepUnit=totalSaleArea>0?Math.ceil((totalCost*10000)/totalSaleArea/10)*10:0;
+
+  return {
+    name:document.getElementById('bldName').value||'(미입력)',
+    structType:document.getElementById('structType').options[document.getElementById('structType').selectedIndex].text,
+    region:document.getElementById('region').options[document.getElementById('region').selectedIndex].text,
+    gfa:totGFA, gfaPy:(totGFA/PY).toFixed(1),
+    constCost:withVAT/10000,
+    perSqm:totGFA>0?Math.round((totDirect+indTotal)/totGFA):0,
+    perPy:totGFA>0?Math.round((totDirect+indTotal)/totGFA*PY):0,
+    landEok, constVAT, sideTotal, totalCost, loanEok,
+    totRevEok, profitEok, profitRate,
+    profitAfterTax, irrBefore, irrAfter, npv, bepUnit,
+    dt, discR,
+  };
+}
+
+function saveScenario(n){
+  _scenarios[n]=captureScenario();
+  _scenarios[n].label=`안${n}`;
+  alert(`현재 입력값이 안${n}으로 저장됐습니다.`);
+  renderCompare();
+}
+
+function clearScenarios(){_scenarios={1:null,2:null};document.getElementById('compareGrid').innerHTML='<div style="font-size:12px;color:var(--muted);padding:20px 0;text-align:center">저장된 안이 없습니다.</div>';}
+
+function renderCompare(){
+  const cg=document.getElementById('compareGrid');if(!cg)return;
+  const s1=_scenarios[1],s2=_scenarios[2];
+  if(!s1&&!s2){cg.innerHTML='<div style="font-size:12px;color:var(--muted);padding:20px 0;text-align:center">저장된 안이 없습니다.</div>';return;}
+
+  const rows=[
+    {label:'건물명/사업명', f:s=>s.name, unit:''},
+    {label:'구조', f:s=>s.structType, unit:''},
+    {label:'지역', f:s=>s.region, unit:''},
+    {label:'연면적', f:s=>fmt(s.gfa), unit:'㎡'},
+    {label:'', f:s=>`(${s.gfaPy}평)`, unit:'', muted:true},
+    {sep:true},
+    {label:'총 공사비 (VAT 포함)', f:s=>s.constCost.toFixed(2), unit:'억원', bold:true},
+    {label:'㎡당 평균 공사비', f:s=>fmt(s.perSqm), unit:'만원/㎡'},
+    {label:'평당 평균 공사비', f:s=>fmt(s.perPy), unit:'만원/평'},
+    {sep:true},
+    {label:'토지비', f:s=>s.landEok.toFixed(2), unit:'억원'},
+    {label:'공사비 (VAT 포함)', f:s=>s.constVAT.toFixed(2), unit:'억원'},
+    {label:'부대비용', f:s=>s.sideTotal.toFixed(2), unit:'억원'},
+    {label:'총사업비 (이자 포함)', f:s=>s.totalCost.toFixed(2), unit:'억원', bold:true},
+    {sep:true},
+    {label:'총 수입', f:s=>s.totRevEok.toFixed(2), unit:'억원'},
+    {label:'세전 개발이익', f:s=>s.profitEok.toFixed(2), unit:'억원', color:s=>s.profitEok>=0?'var(--green)':'var(--warn)', bold:true},
+    {label:'세전 수익률', f:s=>s.profitRate.toFixed(1), unit:'%'},
+    {label:'세후 개발이익', f:s=>s.profitAfterTax.toFixed(2), unit:'억원', color:s=>s.profitAfterTax>=0?'var(--green)':'var(--warn)'},
+    {sep:true},
+    {label:'손익분기 분양가', f:s=>s.bepUnit>0?fmt(s.bepUnit):'—', unit:'만원/㎡'},
+    {label:`세전 IRR (요구수익률 ${s1?.discR||s2?.discR||10}%)`, f:s=>isNaN(s.irrBefore)?'—':s.irrBefore.toFixed(1), unit:'%', color:s=>!isNaN(s.irrBefore)&&s.irrBefore>=(s.discR||10)?'var(--green)':'var(--warn)'},
+    {label:'세후 IRR', f:s=>isNaN(s.irrAfter)?'—':s.irrAfter.toFixed(1), unit:'%'},
+    {label:'NPV', f:s=>s.npv.toFixed(1), unit:'억원', color:s=>s.npv>=0?'var(--green)':'var(--warn)'},
+  ];
+
+  let html=`<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">
+    <thead><tr style="background:var(--surface2)">
+      <th style="padding:8px 12px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border-bottom:1px solid var(--border);min-width:130px">항목</th>
+      <th style="padding:8px 12px;text-align:right;font-size:13px;font-weight:700;color:var(--accent);border-bottom:1px solid var(--border);background:var(--accent-light)">${s1?s1.label:'안1 (미저장)'}</th>
+      <th style="padding:8px 12px;text-align:right;font-size:13px;font-weight:700;color:var(--green);border-bottom:1px solid var(--border);background:var(--green-light)">${s2?s2.label:'안2 (미저장)'}</th>
+      <th style="padding:8px 12px;text-align:right;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border-bottom:1px solid var(--border)">차이 (안2−안1)</th>
+    </tr></thead><tbody>`;
+
+  rows.forEach(r=>{
+    if(r.sep){html+=`<tr><td colspan="4" style="height:1px;background:var(--border);padding:0"></td></tr>`;return;}
+    const v1=s1?r.f(s1):null;const v2=s2?r.f(s2):null;
+    const c1=s1&&r.color?r.color(s1):'var(--text)';
+    const c2=s2&&r.color?r.color(s2):'var(--text)';
+    let diff='—';
+    if(s1&&s2&&!isNaN(parseFloat(v1))&&!isNaN(parseFloat(v2))){
+      const d=parseFloat(v2.replace(/,/g,''))-parseFloat(v1.replace(/,/g,''));
+      const dColor=d>0?'var(--green)':d<0?'var(--warn)':'var(--muted)';
+      diff=`<span style="color:${dColor}">${d>=0?'+':''}${d.toFixed(2)} ${r.unit}</span>`;
+    }
+    const fw=r.bold?'700':'400';const muted=r.muted?'color:var(--muted);font-size:11px':'';
+    html+=`<tr style="border-bottom:1px solid var(--surface2)">
+      <td style="padding:6px 12px;font-size:12px;color:var(--text2);${muted}">${r.label}${r.unit&&!r.muted?`<span style="font-size:10px;color:var(--muted);margin-left:3px">${r.unit}</span>`:''}</td>
+      <td style="padding:6px 12px;text-align:right;font-family:var(--mono);font-weight:${fw};color:${c1};background:rgba(43,91,224,.03)">${v1??'—'}</td>
+      <td style="padding:6px 12px;text-align:right;font-family:var(--mono);font-weight:${fw};color:${c2};background:rgba(26,122,74,.03)">${v2??'—'}</td>
+      <td style="padding:6px 12px;text-align:right;font-family:var(--mono);font-size:11px">${diff}</td>
+    </tr>`;
+  });
+
+  html+=`</tbody></table></div>
+    <div style="font-size:10px;color:var(--muted);margin-top:8px;line-height:1.7">차이(안2−안1) 기준. 녹색=안2 유리, 적색=안2 불리.</div>`;
+  cg.innerHTML=html;
+}
+
 function switchTop(id,btn){
-  ['cost','fs'].forEach(t=>document.getElementById('top-'+t).style.display=t===id?'':'none');
+  ['cost','fs','compare'].forEach(t=>document.getElementById('top-'+t).style.display=t===id?'':'none');
   document.querySelectorAll('.top-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
   const banner=document.getElementById('bannerEl');
   if(id==='fs'){
-    // 최초 진입 시 분양가가 기본값(500)이면 BEP 값으로 자동 대체
     recalcFS();
-    if(_bepUnit>0){
-      let anySet=false;
-      REV_GROUPS.forEach(g=>{if(revData[g.key]&&revData[g.key].saleUnit!==500)anySet=true;});
-      if(!anySet){
-        REV_GROUPS.forEach(g=>{
-          const hasArea=floors.some(f=>{const u=USE_OPTIONS.find(x=>x.key===f.use);return u&&u.sk===g.key;});
-          if(hasArea)revData[g.key].saleUnit=_bepUnit;
-        });
-        buildRevenueInputs();recalcFS();
-      }
-    }
-  }
-  else{
+  } else if(id==='compare'){
+    if(banner)banner.classList.remove('profit','loss');
+    renderCompare();
+  } else {
     if(banner)banner.classList.remove('profit','loss');
     recalcCost();
   }
 }
 function switchSub(id,btn){['ci','cr','cs'].forEach(t=>document.getElementById('sub-'+t).style.display=t===id?'':'none');document.querySelectorAll('#top-cost .sub-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
-function switchFSub(id,btn){['fi','fcf','fr'].forEach(t=>document.getElementById('sub-'+t).style.display=t===id?'':'none');document.querySelectorAll('#top-fs .sub-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');if(id==='fcf')setTimeout(()=>{drawChart(_cfData,[]);},50);}
+function switchFSub(id,btn){['fi','fcf','fr'].forEach(t=>document.getElementById('sub-'+t).style.display=t===id?'':'none');document.querySelectorAll('#top-fs .sub-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');if(id==='fcf')setTimeout(()=>{drawChart(_cfData,[]);},50);if(id==='fr')setTimeout(()=>{renderSensitivity();},50);}
 function toggleLandMode(){const m=document.getElementById('landMode').value;document.getElementById('landDirectF').style.display=m==='direct'?'':'none';document.getElementById('landAreaF').style.display=m==='area'?'':'none';document.getElementById('landUnitF').style.display=m==='area'?'':'none';}
 function fmt(n){return Math.round(n).toLocaleString('ko-KR');}
 function toEok(m){return (m/10000).toFixed(2);}
