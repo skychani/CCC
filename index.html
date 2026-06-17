@@ -8,7 +8,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap');
 :root{--bg:#F2F1EE;--surface:#FFF;--surface2:#ECEAE5;--border:#DEDAD3;--text:#1C1B18;--text2:#6B6760;--muted:#9E9A94;--accent:#2B5BE0;--accent-light:#EBF0FF;--accent-mid:#7B9FF5;--warn:#C94F1A;--warn-light:#FFF0EB;--green:#1A7A4A;--green-light:#E8F7EF;--dark:#1C1B18;--mono:'DM Mono',monospace;--sans:'Noto Sans KR',sans-serif;--r:10px;--touch:44px}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-body{font-family:var(--sans);background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;min-height:100vh;padding-bottom:72px}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;min-height:100vh;padding-bottom:72px;overflow-x:hidden}
 header{background:var(--dark);color:#fff;padding:0 16px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200}
 .hdr-title{font-size:13px;font-weight:600;letter-spacing:.06em;opacity:.9}
 .hdr-acts{display:flex;gap:6px}
@@ -31,18 +31,18 @@ header{background:var(--dark);color:#fff;padding:0 16px;height:52px;display:flex
 .banner.loss{background:#8B2000}
 .banner.profit .b-label,.banner.loss .b-label{color:rgba(255,255,255,.5)}
 /* BEP card */
-.bep-card{background:var(--surface);border:2px solid var(--accent-mid);border-radius:var(--r);padding:14px 16px;margin-bottom:16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-.bep-left{flex:1;min-width:0}
+.bep-card{background:var(--surface);border:2px solid var(--accent-mid);border-radius:var(--r);padding:14px 16px;margin-bottom:16px;display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.bep-left{flex:1;min-width:140px}
 .bep-tag{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:4px}
 .bep-desc{font-size:12px;color:var(--text2);line-height:1.5}
-.bep-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.bep-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;min-width:0}
 .bep-val{font-family:var(--mono);font-size:22px;font-weight:500;color:var(--accent);white-space:nowrap}
-.bep-inp-wrap{display:flex;align-items:center;gap:6px}
-.bep-inp{font-family:var(--mono);font-size:16px;width:100px;padding:5px 10px;border:2px solid var(--accent-mid);border-radius:7px;text-align:right;background:var(--accent-light);color:var(--accent);height:38px}
+.bep-inp-wrap{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.bep-inp{font-family:var(--mono);font-size:15px;width:90px;padding:5px 8px;border:2px solid var(--accent-mid);border-radius:7px;text-align:right;background:var(--accent-light);color:var(--accent);height:36px}
 .bep-inp:focus{outline:none;border-color:var(--accent)}
 .bep-unit{font-size:12px;color:var(--text2)}
-.main{padding:16px;max-width:960px;margin:0 auto}
-.top-tabs{display:flex;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:3px;gap:3px;margin-bottom:16px}
+.main{padding:16px;max-width:960px;margin:0 auto;overflow-x:hidden}
+.top-tabs{display:flex;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:3px;gap:3px;margin-bottom:16px;width:100%}
 .top-tab{flex:1;height:38px;border:none;border-radius:8px;background:transparent;font-family:var(--sans);font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;transition:all .15s}
 .top-tab.active{background:var(--dark);color:#fff}
 .sub-tabs{display:flex;gap:0;margin-bottom:16px;border-bottom:2px solid var(--border)}
@@ -130,7 +130,7 @@ select.ffi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.
 .chart-wrap{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:12px;overflow-x:auto}
 .chart-title{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text2);margin-bottom:12px}
 #cfChart{width:100%;min-width:280px;height:200px}
-.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;width:100%}
 .kpi-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:14px}
 .kpi-label{font-size:10px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
 .kpi-val{font-family:var(--mono);font-size:22px;font-weight:500;color:var(--text);line-height:1}
@@ -147,11 +147,17 @@ select.ffi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.
 .notice{font-size:11px;color:var(--muted);line-height:1.7;padding:12px 14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;margin-top:8px}
 .notice a{color:var(--accent);text-decoration:none}
 .rev-card{margin-bottom:12px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:12px}
+.rev-card .fg{grid-template-columns:1fr}
+/* 탭 컨테이너 너비 고정 — 세 탭이 항상 동일 너비 유지 */
+#top-cost,#top-fs,#top-compare{width:100%;min-width:0;box-sizing:border-box}
+/* 테이블은 예외적으로 scroll 허용 */
+.scroll-x{overflow-x:auto;-webkit-overflow-scrolling:touch;width:100%}
+.scroll-x table{min-width:320px}
 .btm-bar{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);padding:10px 16px;display:flex;gap:8px;z-index:300}
 .btm-btn{flex:1;height:44px;border-radius:10px;border:1.5px solid var(--border);background:var(--surface);font-family:var(--sans);font-size:14px;font-weight:500;color:var(--text2);cursor:pointer}
 .btm-btn.pri{background:var(--accent);border-color:var(--accent);color:#fff;flex:2}
 .btm-btn:active{opacity:.8}
-@media(min-width:768px){body{padding-bottom:0}.btm-bar{display:none}header{padding:0 28px}.banner{padding:14px 28px 16px}.main{padding:24px 28px}.fg{grid-template-columns:repeat(3,1fr)}.fc-body{grid-template-columns:repeat(3,1fr)}.coeff-row{grid-template-columns:repeat(4,1fr)}.kpi-grid{grid-template-columns:repeat(4,1fr)}}
+@media(min-width:768px){body{padding-bottom:0}.btm-bar{display:none}header{padding:0 28px}.banner{padding:14px 28px 16px}.main{padding:24px 28px}.fg{grid-template-columns:repeat(3,1fr)}.fc-body{grid-template-columns:repeat(3,1fr)}.coeff-row{grid-template-columns:repeat(4,1fr)}.kpi-grid{grid-template-columns:repeat(4,1fr)}.rev-card .fg{grid-template-columns:1fr 1fr}}
 #printView{display:none}
 @media print{
   body>*:not(#printView){display:none!important}
@@ -335,7 +341,7 @@ select.ffi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.
         </div>
       </div>
         <div class="sec-head"><div class="sec-label">용도별 ㎡당 기준단가 (만원/㎡) <span class="tip-wrap"><button class="tip-btn">?</button><div class="tip-box">RC조·서울 기준 / 2025년 추정. 평균값이 자동 적용됩니다.<br><a href="https://www.kict.re.kr" target="_blank">KICT →</a> <a href="https://stat.molit.go.kr" target="_blank">국토부 →</a></div></span></div></div>
-        <div class="rblock"><table class="unit-tbl"><thead><tr><th>용도</th><th>최소</th><th>평균</th><th>최대</th></tr></thead><tbody id="unitRefBody"></tbody></table></div>
+        <div class="rblock"><div class="scroll-x"><table class="unit-tbl"><thead><tr><th>용도</th><th>최소</th><th>평균</th><th>최대</th></tr></thead><tbody id="unitRefBody"></tbody></table></div></div>
       </div>
       <div class="section">
         <div class="sec-head"><div class="sec-label">간접비 설정 (직접공사비 %) <span class="tip-wrap"><button class="tip-btn">?</button><div class="tip-box">법정상한: 일반관리비 6%, 이윤 15% (국가계약법).<br><a href="https://www.pps.go.kr" target="_blank">조달청 원가계산기준 →</a></div></span></div></div>
@@ -434,7 +440,7 @@ select.ffi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.
             </select>
           </div>
         </div>
-        <div id="sensGrid" style="overflow-x:auto"></div>
+        <div id="sensGrid" class="scroll-x"></div>
       </div>
 
       <!-- 세전/세후 IRR -->
@@ -473,7 +479,7 @@ select.ffi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.
     <div style="font-size:11px;color:var(--muted);margin-bottom:12px;line-height:1.7">
       입력 탭에서 안1 조건 입력 후 "안1로 저장", 조건 변경 후 "안2로 저장"하면 아래에 비교표가 생성됩니다.
     </div>
-    <div id="compareGrid"></div>
+    <div id="compareGrid" class="scroll-x"></div>
   </div>
 </div>
 <div class="btm-bar">
@@ -663,15 +669,24 @@ function renderSideGrid(){
   const g=document.getElementById('sideGrid');if(!g)return;g.innerHTML='';
   const baseLabels={land:'토지비',const:'공사비(VAT전)',constVAT:'공사비(VAT포함)',rev:'분양수입',loan:'대출금액'};
   sideItems.forEach((d,i)=>{
-    const div=document.createElement('div');div.className='extra-item';div.style.flexWrap='wrap';div.style.gap='8px';
+    const div=document.createElement('div');
+    div.style.cssText='background:var(--surface);border:1.5px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:8px';
     const tipH=d.tip?`<span class="tip-wrap"><button class="tip-btn">?</button><div class="tip-box">${d.tip}</div></span>`:'';
     const baseOpts=['land','const','constVAT','rev','loan'].map(k=>`<option value="${k}"${(d.base||'constVAT')===k?' selected':''}>${baseLabels[k]}</option>`).join('');
     div.innerHTML=`
-      <input class="fi" style="height:34px;font-size:12px;flex:1;min-width:100px" value="${d.label}" onchange="sideItems[${i}].label=this.value;recalcFS()">${tipH}
-      <select style="font-family:var(--sans);font-size:11px;height:34px;border:1.5px solid var(--border);border-radius:6px;background:var(--bg);padding:0 6px;color:var(--text2);cursor:pointer;min-width:90px" onchange="sideItems[${i}].base=this.value;recalcFS()">${baseOpts}</select>
-      <input type="number" class="ex-inp" value="${d.rate}" min="0" max="100" step="0.1" onchange="sideItems[${i}].rate=+this.value;recalcFS()">
-      <span class="ex-sfx">%</span>
-      <button class="btn-del" onclick="removeSide(${i})">×</button>`;
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+        <input class="fi" style="height:34px;font-size:13px;flex:1;min-width:0" value="${d.label}"
+          onchange="sideItems[${i}].label=this.value;recalcFS()">${tipH}
+        <button class="btn-del" onclick="removeSide(${i})">×</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <span style="font-size:10px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);white-space:nowrap">기준</span>
+        <select style="font-family:var(--sans);font-size:12px;height:34px;border:1.5px solid var(--border);border-radius:6px;background:var(--bg);padding:0 6px;color:var(--text2);cursor:pointer;flex:1;min-width:0"
+          onchange="sideItems[${i}].base=this.value;recalcFS()">${baseOpts}</select>
+        <input type="number" class="ex-inp" value="${d.rate}" min="0" max="100" step="0.1" style="width:60px;flex-shrink:0"
+          onchange="sideItems[${i}].rate=+this.value;recalcFS()">
+        <span class="ex-sfx" style="flex-shrink:0">%</span>
+      </div>`;
     g.appendChild(div);
   });
 }
@@ -948,7 +963,7 @@ function recalcFS(){
 
   // CF table
   const ct=document.getElementById('cfTable');
-  if(ct)ct.innerHTML=`<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px"><tr style="background:var(--surface2)"><th style="padding:6px 10px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)">분기</th><th style="padding:6px 10px;text-align:right;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)">현금흐름(억)</th><th style="padding:6px 10px;text-align:right;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)">누적(억)</th></tr>`+cfs.map((c,i)=>`<tr style="border-bottom:1px solid var(--surface2)"><td style="padding:5px 10px;color:var(--text2)">Q${i+1}</td><td style="padding:5px 10px;text-align:right;font-family:var(--mono);color:${c>=0?'var(--green)':'var(--warn)'}">${c>=0?'+':''}${c.toFixed(2)}</td><td style="padding:5px 10px;text-align:right;font-family:var(--mono);color:${cumCF[i]>=0?'var(--green)':'var(--warn)'}">${cumCF[i]>=0?'+':''}${cumCF[i]}</td></tr>`).join('')+`</table></div>`;
+  if(ct)ct.innerHTML=`<div class="scroll-x"><table style="width:100%;border-collapse:collapse;font-size:12px;min-width:260px"><tr style="background:var(--surface2)"><th style="padding:6px 10px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)">분기</th><th style="padding:6px 10px;text-align:right;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)">현금흐름(억)</th><th style="padding:6px 10px;text-align:right;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)">누적(억)</th></tr>`+cfs.map((c,i)=>`<tr style="border-bottom:1px solid var(--surface2)"><td style="padding:5px 10px;color:var(--text2)">Q${i+1}</td><td style="padding:5px 10px;text-align:right;font-family:var(--mono);color:${c>=0?'var(--green)':'var(--warn)'}">${c>=0?'+':''}${c.toFixed(2)}</td><td style="padding:5px 10px;text-align:right;font-family:var(--mono);color:${cumCF[i]>=0?'var(--green)':'var(--warn)'}">${cumCF[i]>=0?'+':''}${cumCF[i]}</td></tr>`).join('')+`</table></div>`;
 
   drawChart(cfs,cumCF);
 
@@ -1181,7 +1196,7 @@ function renderSensitivity(){
   const base=calcFSMetrics();
 
   const cols=steps.map(s=>s===0?'<b>기준</b>':(s>0?`+${s}%`:`${s}%`));
-  let html=`<table style="width:100%;border-collapse:collapse;font-size:12px;min-width:500px">
+  let html=`<table style="width:100%;border-collapse:collapse;font-size:12px;min-width:360px">
     <thead><tr style="background:var(--surface2)">
       <th style="padding:7px 10px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border-bottom:1px solid var(--border)">변수</th>
       ${cols.map(c=>`<th style="padding:7px 8px;text-align:center;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);border-bottom:1px solid var(--border)">${c}</th>`).join('')}
@@ -1362,7 +1377,7 @@ function renderCompare(){
     {label:'NPV', f:s=>s.npv.toFixed(1), unit:'억원', color:s=>s.npv>=0?'var(--green)':'var(--warn)'},
   ];
 
-  let html=`<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">
+  let html=`<table style="width:100%;border-collapse:collapse;font-size:12px;min-width:360px">
     <thead><tr style="background:var(--surface2)">
       <th style="padding:8px 12px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border-bottom:1px solid var(--border);min-width:130px">항목</th>
       <th style="padding:8px 12px;text-align:right;font-size:13px;font-weight:700;color:var(--accent);border-bottom:1px solid var(--border);background:var(--accent-light)">${s1?s1.label:'안1 (미저장)'}</th>
@@ -1390,7 +1405,7 @@ function renderCompare(){
     </tr>`;
   });
 
-  html+=`</tbody></table></div>
+  html+=`</tbody></table>
     <div style="font-size:10px;color:var(--muted);margin-top:8px;line-height:1.7">차이(안2−안1) 기준. 녹색=안2 유리, 적색=안2 불리.</div>`;
   cg.innerHTML=html;
 }
