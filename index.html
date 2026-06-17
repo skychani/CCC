@@ -293,9 +293,10 @@ select.ffi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.
         </div>
         <div class="bep-right">
           <div class="bep-val" id="bepVal">— 만원/㎡</div>
+          <button onclick="applyBepAuto()" style="font-family:var(--sans);font-size:12px;font-weight:600;padding:6px 14px;border-radius:7px;border:none;background:var(--accent);color:#fff;cursor:pointer;white-space:nowrap">손익분기가로 적용 →</button>
           <div class="bep-inp-wrap">
-            <input type="number" class="bep-inp" id="bepAdj" placeholder="조정값" min="0" step="10"
-              oninput="applyBepAdj(this.value)" title="분양가를 직접 입력하면 수입·비용 탭의 분양가에 일괄 반영됩니다">
+            <input type="number" class="bep-inp" id="bepAdj" placeholder="직접 입력" min="0" step="10"
+              oninput="this.dataset.userSet='1';applyBepAdj(this.value)" title="분양가 직접 입력 시 수입 탭 전체 용도에 일괄 반영">
             <span class="bep-unit">만원/㎡ 적용</span>
           </div>
         </div>
@@ -333,6 +334,7 @@ let extraItems=[],extraId=0;
 let sideItems=[],sideId=0;
 let floors=[],floorId=0;
 let _cfData=[];
+let _bepUnit=0; // 손익분기 분양가 (만원/㎡), recalcFS에서 갱신
 
 window.onload=function(){
   floors=[
@@ -345,7 +347,7 @@ window.onload=function(){
     .forEach(d=>extraItems.push({id:extraId++,...d}));
   [{label:'취득세',rate:4.6,tip:'토지매입가 기준 4.6% (주택 외 기준).'},{label:'설계비',rate:2.5,tip:'공사비 기준 2~3% 수준.'},{label:'감리비',rate:1.0,tip:'공사비 기준 0.8~1.5%.'},{label:'분양마케팅비',rate:1.5,tip:'분양수입 기준 1~2%. 임대전용 시 제외.'},{label:'금융수수료',rate:0.5,tip:'PF 대출금액 기준 0.5~1%.'}]
     .forEach(d=>sideItems.push({id:sideId++,...d}));
-  buildUnitRefTable();renderExtraGrid();renderSideGrid();renderFloors();buildRevenueInputs();recalcCost();
+  buildUnitRefTable();renderExtraGrid();renderSideGrid();sortFloors();renderFloors();buildRevenueInputs();recalcCost();
   const sv=localStorage.getItem('cck_v4');if(sv){try{applyData(JSON.parse(sv));}catch(e){}}
 };
 
@@ -358,7 +360,7 @@ function renderFloors(){
     const opts=USE_OPTIONS.map(u=>`<option value="${u.key}"${f.use===u.key?' selected':''}>${u.label}</option>`).join('');
     const card=document.createElement('div');card.className='floor-card';
     card.innerHTML=`<div class="fc-head">
-      <input class="fn-input" value="${f.name}" onchange="floors[${idx}].name=this.value;floors[${idx}].ug=isUG(this.value);renderFloors();recalcCost()">
+      <input class="fn-input" value="${f.name}" onchange="floors[${idx}].name=this.value;floors[${idx}].ug=isUG(this.value);sortFloors();renderFloors();recalcCost()">
       ${ug?'<span class="fc-ug">지하</span>':''}
       <div class="fc-badge" id="badge_${f.id}">— 만원</div>
       <button class="btn-del" onclick="removeFloor(${idx})">×</button>
@@ -373,7 +375,28 @@ function renderFloors(){
     list.appendChild(card);
   });
 }
-function addFloor(){floors.push({id:floorId++,name:`${floors.length+1}층`,use:'retail1',priv:150,common:20,height:2.8,unitOverride:'',ug:false});renderFloors();recalcCost();document.getElementById('floorList').lastElementChild.scrollIntoView({behavior:'smooth',block:'nearest'});}
+// 층 정렬: 지하층(숫자 역순) → 1층 → 지상층(숫자순)
+function floorSortKey(name){
+  const n=name.trim();
+  // 지하N층 / B숫자 → 음수 (지하3 > 지하2 > 지하1 순)
+  const ugMatch=n.match(/지하\s*(\d+)|[Bb](\d+)/);
+  if(ugMatch){const num=parseInt(ugMatch[1]||ugMatch[2]);return -1000+num;}  // 지하3=-997, 지하1=-999
+  // 1층, 2층, RF층 등
+  const abMatch=n.match(/^(\d+)/);
+  if(abMatch)return parseInt(abMatch[1]);
+  if(/rf|옥상|루프/i.test(n))return 9000;
+  return 5000; // 기타
+}
+function sortFloors(){
+  floors.sort((a,b)=>floorSortKey(a.name)-floorSortKey(b.name));
+}
+
+function addFloor(){
+  floors.push({id:floorId++,name:`${floors.filter(f=>!f.ug).length+1}층`,use:'retail1',priv:150,common:20,height:2.8,unitOverride:'',ug:false});
+  sortFloors();
+  renderFloors();recalcCost();
+  // 스크롤은 정렬 후 위치가 바뀌므로 생략
+}
 function removeFloor(idx){if(floors.length<=1)return;floors.splice(idx,1);renderFloors();recalcCost();}
 
 function hCoeff(h,base){const b=parseFloat(base)||2.8;return Math.min(Math.max((h/b)*0.9+0.1,0.85),1.35);}
@@ -560,26 +583,37 @@ function recalcFS(){
   const areaByGrpForBEP={};REV_GROUPS.forEach(g=>{areaByGrpForBEP[g.key]=0;});
   floors.forEach(f=>{const u=USE_OPTIONS.find(x=>x.key===f.use);if(u&&u.sk)areaByGrpForBEP[u.sk]+=(f.priv||0);});
   const totalSaleArea=REV_GROUPS.reduce((s,g)=>s+areaByGrpForBEP[g.key],0);
-  const totalCostForBEP=totCostEok+interestEok; // 억원
-  const bepUnit=totalSaleArea>0?Math.ceil((totalCostForBEP*10000)/totalSaleArea/10)*10:0; // 만원/㎡, 10단위 올림
+  const totalCostForBEP=totCostEok+interestEok;
+  const bepUnit=totalSaleArea>0?Math.ceil((totalCostForBEP*10000)/totalSaleArea/10)*10:0;
+  _bepUnit=bepUnit;
+
+  // revData에 BEP 분양가가 아직 기본값(500)이거나 사용자가 bepAdj로 바꾼 적 없는 경우 자동 반영
+  // → 항상 BEP 기준으로 revData 동기화하되, 사용자가 직접 수정한 경우는 유지
+  // 단: bepAdj 입력 필드가 비어있을 때만 자동 채움
+  const bepAdjInp=document.getElementById('bepAdj');
+  const isAdjEmpty=bepAdjInp&&(bepAdjInp.value===''||bepAdjInp.dataset.userSet!=='1');
+  if(bepUnit>0&&isAdjEmpty){
+    // 분양가 필드에 BEP 값 미리 채워두기 (placeholder처럼)
+    if(bepAdjInp){bepAdjInp.placeholder=fmt(bepUnit);}
+  }
+
   const bepEl=document.getElementById('bepVal');
   const bepCard=document.getElementById('bepCard');
   if(bepEl){bepEl.textContent=bepUnit>0?fmt(bepUnit)+' 만원/㎡':'면적 없음';}
   if(bepCard){
-    bepCard.style.borderColor=profitEok>=0?'var(--green)':'var(--warn)';
-    bepCard.style.background=profitEok>=0?'var(--green-light)':'var(--warn-light)';
-    const tag=bepCard.querySelector('.bep-tag');
-    if(tag){tag.style.color=profitEok>=0?'var(--green)':'var(--warn)';}
-    const val=bepCard.querySelector('.bep-val');
-    if(val){val.style.color=profitEok>=0?'var(--green)':'var(--warn)';}
-    const inp=document.getElementById('bepAdj');
-    if(inp){inp.style.borderColor=profitEok>=0?'var(--green)':'var(--warn)';inp.style.background=profitEok>=0?'var(--green-light)':'var(--warn-light)';inp.style.color=profitEok>=0?'var(--green)':'var(--warn)';}
+    const isProfit=profitEok>=0;
+    bepCard.style.borderColor=isProfit?'var(--green)':'var(--warn)';
+    bepCard.style.background=isProfit?'var(--green-light)':'var(--warn-light)';
+    const tag=bepCard.querySelector('.bep-tag');if(tag)tag.style.color=isProfit?'var(--green)':'var(--warn)';
+    const val=bepCard.querySelector('.bep-val');if(val)val.style.color=isProfit?'var(--green)':'var(--warn)';
+    if(bepAdjInp){bepAdjInp.style.borderColor=isProfit?'var(--green)':'var(--warn)';bepAdjInp.style.background=isProfit?'var(--green-light)':'var(--warn-light)';bepAdjInp.style.color=isProfit?'var(--green)':'var(--warn)';}
     const desc=document.getElementById('bepDesc');
     if(desc){
-      const gap=profitEok>=0
-        ? `현재 분양가가 손익분기(${fmt(bepUnit)}만원/㎡)보다 높습니다.`
-        : `현재 분양가가 손익분기(${fmt(bepUnit)}만원/㎡)에 미달합니다.`;
-      desc.textContent=gap;
+      const cur=REV_GROUPS.map(g=>revData[g.key]?.saleUnit||0).filter(v=>v>0);
+      const avgCur=cur.length>0?Math.round(cur.reduce((s,v)=>s+v,0)/cur.length):0;
+      desc.innerHTML=isProfit
+        ?`현재 분양가(평균 <b>${fmt(avgCur)}</b>만원/㎡)가 손익분기(<b>${fmt(bepUnit)}</b>만원/㎡)보다 높습니다.<br>흑자 여유: ${fmt(Math.round((avgCur-bepUnit)))}만원/㎡`
+        :`손익분기 달성을 위해 분양가 <b>${fmt(bepUnit)}</b>만원/㎡ 이상 필요합니다.<br>현재 평균 <b>${fmt(avgCur)}</b>만원/㎡ → 부족분 ${fmt(Math.round(bepUnit-avgCur))}만원/㎡`;
     }
   }
 
@@ -628,20 +662,40 @@ function drawChart(cfs,cumCF){
 }
 
 function applyBepAdj(val){
-  // 입력한 분양가를 모든 분양 가능 용도에 일괄 반영
   const v=parseFloat(val);if(!v||v<=0)return;
+  const inp=document.getElementById('bepAdj');if(inp)inp.dataset.userSet='1';
   REV_GROUPS.forEach(g=>{
     const hasArea=floors.some(f=>{const u=USE_OPTIONS.find(x=>x.key===f.use);return u&&u.sk===g.key;});
     if(hasArea)revData[g.key].saleUnit=v;
   });
   buildRevenueInputs();recalcFS();
 }
+function applyBepAuto(){
+  if(!_bepUnit||_bepUnit<=0)return;
+  const inp=document.getElementById('bepAdj');
+  if(inp){inp.value=_bepUnit;inp.dataset.userSet='1';}
+  applyBepAdj(_bepUnit);
+}
 function toggleBlock(h){h.classList.toggle('open');h.nextElementSibling.classList.toggle('open');}
 function switchTop(id,btn){
   ['cost','fs'].forEach(t=>document.getElementById('top-'+t).style.display=t===id?'':'none');
   document.querySelectorAll('.top-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
   const banner=document.getElementById('bannerEl');
-  if(id==='fs'){recalcFS();}
+  if(id==='fs'){
+    // 최초 진입 시 분양가가 기본값(500)이면 BEP 값으로 자동 대체
+    recalcFS();
+    if(_bepUnit>0){
+      let anySet=false;
+      REV_GROUPS.forEach(g=>{if(revData[g.key]&&revData[g.key].saleUnit!==500)anySet=true;});
+      if(!anySet){
+        REV_GROUPS.forEach(g=>{
+          const hasArea=floors.some(f=>{const u=USE_OPTIONS.find(x=>x.key===f.use);return u&&u.sk===g.key;});
+          if(hasArea)revData[g.key].saleUnit=_bepUnit;
+        });
+        buildRevenueInputs();recalcFS();
+      }
+    }
+  }
   else{
     if(banner)banner.classList.remove('profit','loss');
     recalcCost();
