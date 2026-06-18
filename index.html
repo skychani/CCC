@@ -42,8 +42,9 @@ header{background:var(--dark);color:#fff;padding:0;height:52px;display:flex;alig
 .bep-inp{font-family:var(--mono);font-size:15px;width:90px;padding:5px 8px;border:2px solid var(--accent-mid);border-radius:7px;text-align:right;background:var(--accent-light);color:var(--accent);height:36px}
 .bep-inp:focus{outline:none;border-color:var(--accent)}
 .bep-unit{font-size:12px;color:var(--text2)}
-.main{padding:16px;max-width:960px;margin:0 auto;overflow-x:hidden}
-.top-tabs{display:flex;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:3px;gap:3px;margin-bottom:16px;width:100%}
+.page-wrap{width:100%;background:var(--bg)}
+.main{max-width:960px;width:100%;margin:0 auto;box-sizing:border-box;padding:0}
+.inner{padding:16px;}.top-tabs{display:flex;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:3px;gap:3px;margin-bottom:16px;width:100%}
 .top-tab{flex:1;height:38px;border:none;border-radius:8px;background:transparent;font-family:var(--sans);font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;transition:all .15s}
 .top-tab.active{background:var(--dark);color:#fff}
 .sub-tabs{display:flex;gap:0;margin-bottom:16px;border-bottom:2px solid var(--border)}
@@ -52,12 +53,12 @@ header{background:var(--dark);color:#fff;padding:0;height:52px;display:flex;alig
 .section{margin-bottom:20px}
 .sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
 .sec-label{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:4px}
-.fg{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;min-width:0}
 .fg.c1{grid-template-columns:1fr}
-.field{display:flex;flex-direction:column;gap:5px}
+.field{display:flex;flex-direction:column;gap:5px;min-width:0}
 .field.s2{grid-column:span 2}
 .fl{font-size:11px;font-weight:500;color:var(--text2);display:flex;align-items:center;gap:4px}
-.fi{font-family:var(--sans);font-size:15px;padding:0 12px;height:var(--touch);border:1.5px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);width:100%;-webkit-appearance:none;transition:border-color .15s}
+.fi{font-family:var(--sans);font-size:15px;padding:0 12px;height:var(--touch);border:1.5px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);width:100%;min-width:0;-webkit-appearance:none;transition:border-color .15s}
 .fi:focus{outline:none;border-color:var(--accent-mid)}
 .fi.err{border-color:var(--warn)!important;background:var(--warn-light)!important}
 .ffi.err{border-color:var(--warn)!important;background:var(--warn-light)!important}
@@ -150,7 +151,7 @@ select.ffi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.
 .rev-card{margin-bottom:12px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:12px}
 .rev-card .fg{grid-template-columns:1fr}
 /* 탭 컨테이너 너비 고정 — 세 탭이 항상 동일 너비 유지 */
-#top-cost,#top-fs,#top-compare{width:100%;min-width:0;box-sizing:border-box}
+#top-cost,#top-fs,#top-compare{width:100%;min-width:0;max-width:100%;box-sizing:border-box}
 /* 테이블은 예외적으로 scroll 허용 */
 .scroll-x{overflow-x:auto;-webkit-overflow-scrolling:touch;width:100%}
 .scroll-x table{min-width:320px}
@@ -158,8 +159,7 @@ select.ffi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.
 .btm-btn{flex:1;height:44px;border-radius:10px;border:1.5px solid var(--border);background:var(--surface);font-family:var(--sans);font-size:14px;font-weight:500;color:var(--text2);cursor:pointer}
 .btm-btn.pri{background:var(--accent);border-color:var(--accent);color:#fff;flex:2}
 .btm-btn:active{opacity:.8}
-@media(min-width:768px){body{padding-bottom:0}.btm-bar{display:none}.hdr-inner{padding:0 28px;max-width:960px}.banner-inner{padding:14px 28px 16px;max-width:960px}.main{padding:24px 28px}.fg{grid-template-columns:repeat(3,1fr)}.fc-body{grid-template-columns:repeat(3,1fr)}.coeff-row{grid-template-columns:repeat(4,1fr)}.kpi-grid{grid-template-columns:repeat(4,1fr)}.rev-card .fg{grid-template-columns:1fr 1fr}}
-#printView{display:none}
+@media(min-width:768px){body{padding-bottom:0}.btm-bar{display:none}.hdr-inner{padding:0 28px;max-width:960px}.banner-inner{padding:14px 28px 16px;max-width:960px}.inner{padding:24px 28px}.fg{grid-template-columns:repeat(3,1fr)}.fc-body{grid-template-columns:repeat(3,1fr)}.coeff-row{grid-template-columns:repeat(4,1fr)}.kpi-grid{grid-template-columns:repeat(4,1fr)}.rev-card .fg{grid-template-columns:1fr 1fr}}#printView{display:none}
 @media print{
   body>*:not(#printView){display:none!important}
   #printView{display:block!important;font-family:'Noto Sans KR',sans-serif;font-size:10.5pt;color:#1C1B18;padding:14mm 12mm}
@@ -252,7 +252,9 @@ select.ffi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.
     </div>
   </div>
 </div>
+<div class="page-wrap">
 <div class="main">
+<div class="inner">
   <div class="top-tabs">
     <button class="top-tab active" onclick="switchTop('cost',this)">공사비 산출</button>
     <button class="top-tab" onclick="switchTop('fs',this)">사업성 검토</button>
@@ -484,7 +486,9 @@ select.ffi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.
     </div>
     <div id="compareGrid" class="scroll-x"></div>
   </div>
-</div>
+</div><!-- /inner -->
+</div><!-- /main -->
+</div><!-- /page-wrap -->
 <div class="btm-bar">
   <button class="btm-btn" onclick="loadData()">불러오기</button>
   <button class="btm-btn" onclick="saveData()">저장</button>
